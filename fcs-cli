@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import re
+
+
+path = os.path.join(os.environ.get("HOME"), "fcmemo.md")
+with open(path) as f:
+    lines = f.read().splitlines()
+
+
+def show_title():
+    match_lines = [l.strip("# ") for l in lines if l.startswith("#")]
+
+    for line in reversed(match_lines):
+        print(line)
+
+
+def show_contents(title: str):
+    flag = False
+    result = ""
+    regexp = re.compile(r"^#* %s$" % title)
+
+    for l in lines:
+        if regexp.match(l):
+            flag = True
+        elif flag and l.startswith("#"):
+            flag = False
+
+        if flag:
+            result += l + "\n"
+
+    c = re.sub("(.*)\n+", r"\1", result, flags=re.DOTALL)
+    print(c, end="")
+
+
+if __name__ == "__main__":
+    args = sys.argv
+
+    if len(args) == 1:
+        show_title()
+    else:
+        show_contents(args[1])
