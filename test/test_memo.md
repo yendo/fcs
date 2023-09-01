@@ -1,25 +1,30 @@
 # memo
 
-memo
+## title
 
-## title1
-
-contents1
+contents
 
 ## long title one
 
-one line1
-one line2
+line one
+line two
 
 ## contents have blank lines
 
+
 1st line
 
+
 2nd line
+
 
 ## same title
 
 contents 1
+
+## same title
+
+contents 2
 
 ## other title
 
@@ -27,7 +32,7 @@ other contents
 
 ## same title
 
-contents 2
+contents 3
 
 ##
 
@@ -35,10 +40,11 @@ no title
 
 ## no contents
 
+## no contents2
+
 ##no_space_title
 
 The contents are ignored.
 
-## last
-
-last
+## no blank line between title and contents
+contents
