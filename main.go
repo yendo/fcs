@@ -102,10 +102,13 @@ func run(buf io.Writer) error {
 	}
 	defer fd.Close()
 
-	if len(args) == 1 {
-		printContents(buf, fd, args[0])
-	} else {
+	switch len(args) {
+	case 0:
 		printTitles(buf, fd)
+	case 1:
+		printContents(buf, fd, args[0])
+	default:
+		return fmt.Errorf("invalid number of arguments")
 	}
 
 	return nil

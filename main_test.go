@@ -96,18 +96,20 @@ func TestRun(t *testing.T) {
 		defer flag.CommandLine.Set("v", "false")
 
 		var buf bytes.Buffer
-		run(&buf)
+		err := run(&buf)
 
+		assert.NoError(t, err)
 		assert.Equal(t, true, *showVersion)
 		assert.Equal(t, version+"\n", buf.String())
 	})
 
-	t.Run("no args", func(t *testing.T) {
+	t.Run("without args", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
 
 		var buf bytes.Buffer
-		run(&buf)
+		err := run(&buf)
 
+		assert.NoError(t, err)
 		assert.Equal(t, `notes
 title
 long title one
@@ -129,9 +131,25 @@ no blank line between title and contents
 		os.Args = []string{"fcs-cli", "title"}
 
 		var buf bytes.Buffer
-		run(&buf)
+		err := run(&buf)
 
+		assert.NoError(t, err)
 		assert.Equal(t, "## title\n\ncontents\n", buf.String())
+	})
+
+	t.Run("with two args", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+
+		oldArgs := os.Args
+		defer func() { os.Args = oldArgs }()
+		os.Args = []string{"fcs-cli", "title", "other"}
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid number of arguments")
+		assert.Equal(t, "", buf.String())
 	})
 
 }
