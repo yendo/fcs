@@ -12,6 +12,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func getExpectedTitles() string {
+	titles := `notes
+title
+long title one
+contents have blank lines
+same title
+other heading level
+title has trailing spaces
+no contents
+no contents2
+no_space_title
+no blank line between title and contents
+`
+
+	return strings.Replace(titles, "trailing spaces", "trailing spaces  ", 1)
+}
+
 func TestPrintTitles(t *testing.T) {
 	var buf bytes.Buffer
 
@@ -22,17 +39,7 @@ func TestPrintTitles(t *testing.T) {
 
 	printTitles(&buf, fd)
 
-	assert.Equal(t, `notes
-title
-long title one
-contents have blank lines
-same title
-other heading level
-no contents
-no contents2
-no_space_title
-no blank line between title and contents
-`, buf.String())
+	assert.Equal(t, getExpectedTitles(), buf.String())
 }
 
 func TestPrintContents(t *testing.T) {
@@ -47,6 +54,7 @@ func TestPrintContents(t *testing.T) {
 		{"## contents have blank lines", "## contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
 		{"## same title", "## same title\n\n1st\n\n" + "## same title\n\n2nd\n\n" + "## same title\n\n3rd\n"},
 		{"### other heading level", "### other heading level\n\n" + "contents\n"},
+		{"### title has trailing spaces  ", "## title has trailing spaces  \n\n" + "The contents have trailing spaces.  \n"},
 		{"##", ""},
 		{"## no contents", "## no contents\n"},
 		{"##no_space_title", ""},
@@ -110,17 +118,7 @@ func TestRun(t *testing.T) {
 		err := run(&buf)
 
 		assert.NoError(t, err)
-		assert.Equal(t, `notes
-title
-long title one
-contents have blank lines
-same title
-other heading level
-no contents
-no contents2
-no_space_title
-no blank line between title and contents
-`, buf.String())
+		assert.Equal(t, getExpectedTitles(), buf.String())
 	})
 
 	t.Run("with a arg", func(t *testing.T) {
@@ -151,5 +149,4 @@ no blank line between title and contents
 		assert.EqualError(t, err, "invalid number of arguments")
 		assert.Equal(t, "", buf.String())
 	})
-
 }

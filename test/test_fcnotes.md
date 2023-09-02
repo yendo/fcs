@@ -30,6 +30,10 @@ line two
 
 contents
 
+## title has trailing spaces  
+
+The contents have trailing spaces.  
+
 ## same title
 
 3rd
