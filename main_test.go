@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 
@@ -51,4 +52,36 @@ func TestPrintContents(t *testing.T) {
 		printContents(&buf, fileName, strings.TrimLeft(tt.title, "# "))
 		assert.Equal(t, tt.contents, buf.String())
 	}
+}
+
+func TestRun(t *testing.T) {
+
+	t.Run("no args", func(t *testing.T) {
+		var buf bytes.Buffer
+		run(&buf)
+
+		assert.Equal(t, `notes
+title
+long title one
+contents have blank lines
+same title
+other title
+no contents
+no contents2
+no_space_title
+no blank line between title and contents
+`, buf.String())
+	})
+
+	t.Run("with a arg", func(t *testing.T) {
+		oldArgs := os.Args
+		os.Args = []string{"fcs-cli", "title"}
+		defer func() { os.Args = oldArgs }()
+
+		var buf bytes.Buffer
+		run(&buf)
+
+		assert.Equal(t, "## title\n\ncontents\n", buf.String())
+	})
+
 }

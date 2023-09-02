@@ -78,26 +78,38 @@ func printContents(buf io.Writer, fileName string, title string) error {
 	return nil
 }
 
-func main() {
+func run(buf io.Writer) error {
 	flag.Parse()
 	args := flag.Args()
 	var err error
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
 
 	fileName := filepath.Join(home, "fcnotes.md")
 	if len(args) == 1 {
-		err = printContents(os.Stdout, fileName, args[0])
+		err = printContents(buf, fileName, args[0])
 	} else {
-		err = printTitles(os.Stdout, fileName)
+		err = printTitles(buf, fileName)
 	}
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
+
+	return nil
+}
+
+func main() {
+	exitCode := 0
+
+	err := run(os.Stdout)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		exitCode = 1
+	}
+
+	os.Exit(exitCode)
 }
