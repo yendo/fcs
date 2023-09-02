@@ -11,10 +11,10 @@ import (
 func TestPrintTitles(t *testing.T) {
 	var buf bytes.Buffer
 
-	fileName := "test/test_memo.md"
+	fileName := "test/test_fcnotes.md"
 	printTitles(&buf, fileName)
 
-	assert.Equal(t, `memo
+	assert.Equal(t, `notes
 title
 long title one
 contents have blank lines
@@ -28,7 +28,7 @@ no blank line between title and contents
 }
 
 func TestPrintContents(t *testing.T) {
-	fileName := "test/test_memo.md"
+	fileName := "test/test_fcnotes.md"
 
 	tests := []struct {
 		title    string

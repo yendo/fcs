@@ -89,7 +89,7 @@ func main() {
 		return
 	}
 
-	fileName := filepath.Join(home, "fcmemo.md")
+	fileName := filepath.Join(home, "fcnotes.md")
 	if len(args) == 1 {
 		err = printContents(os.Stdout, fileName, args[0])
 	} else {

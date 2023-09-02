@@ -1,6 +1,6 @@
 # fcs
 
-fcs is a quick searcher for memos like flashcards.
+fcs is a quick searcher for flashcards-like notes with fzf.
 
 ## Usage
 
@@ -8,9 +8,9 @@ fcs is a quick searcher for memos like flashcards.
 fcs
 ```
 
-You can search for the title of the memo in fzf.
-The preview screen shows the contents of the memo.
-Pressing enter outputs the memo to standard output.
+You can search for the title of the note with fzf.
+The preview screen shows the contents of the note.
+Pressing enter outputs the note to standard output.
 
 ## Installation
 
@@ -31,10 +31,10 @@ fcs() {
 }
 ```
 
-## Memo format
+## Notes format
 
-The format of the memo is similar to markdown.
-However, all you really need to do is write the title of each memo in the heading
+The format of notes is similar to markdown.
+However, all you really need are the titles of each note in the heading
 and the content below it.
 
 ``` markdown
