@@ -12,6 +12,10 @@ import (
 	"strings"
 )
 
+const version string = "0.1.0"
+
+var showVersion = flag.Bool("v", false, "Show version")
+
 func printTitles(buf io.Writer, fd io.Reader) {
 	var allTitles []string
 
@@ -81,6 +85,11 @@ func run(buf io.Writer) error {
 	flag.Parse()
 	args := flag.Args()
 	var err error
+
+	if *showVersion {
+		fmt.Fprintln(buf, version)
+		return nil
+	}
 
 	fileName, err := getNotesFile()
 	if err != nil {

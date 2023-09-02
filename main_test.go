@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -75,6 +76,8 @@ func TestGetFcsFile(t *testing.T) {
 	})
 
 	t.Run("default filename", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
+
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
@@ -85,6 +88,18 @@ func TestGetFcsFile(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
+
+	t.Run("with version flag", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+		flag.CommandLine.Set("v", "true")
+		defer flag.CommandLine.Set("v", "false")
+
+		var buf bytes.Buffer
+		run(&buf)
+
+		assert.Equal(t, true, *showVersion)
+		assert.Equal(t, version+"\n", buf.String())
+	})
 
 	t.Run("no args", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
