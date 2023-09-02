@@ -12,9 +12,10 @@ import (
 	"strings"
 )
 
-const version string = "0.1.0"
-
-var showVersion = flag.Bool("v", false, "Show version")
+var (
+	version     string = "unknown"
+	showVersion *bool  = flag.Bool("v", false, "Show version")
+)
 
 func printTitles(buf io.Writer, fd io.Reader) {
 	var allTitles []string
