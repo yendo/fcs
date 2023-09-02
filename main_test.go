@@ -7,13 +7,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPrintTitles(t *testing.T) {
 	var buf bytes.Buffer
 
 	fileName := "test/test_fcnotes.md"
-	printTitles(&buf, fileName)
+	fd, err := os.Open(fileName)
+	require.NoError(t, err)
+	defer fd.Close()
+
+	printTitles(&buf, fd)
 
 	assert.Equal(t, `notes
 title
@@ -48,8 +53,11 @@ func TestPrintContents(t *testing.T) {
 
 	for _, tt := range tests {
 		var buf bytes.Buffer
+		fd, err := os.Open(fileName)
+		require.NoError(t, err)
+		defer fd.Close()
 
-		printContents(&buf, fileName, strings.TrimLeft(tt.title, "# "))
+		printContents(&buf, fd, strings.TrimLeft(tt.title, "# "))
 		assert.Equal(t, tt.contents, buf.String())
 	}
 }
@@ -75,8 +83,8 @@ no blank line between title and contents
 
 	t.Run("with a arg", func(t *testing.T) {
 		oldArgs := os.Args
-		os.Args = []string{"fcs-cli", "title"}
 		defer func() { os.Args = oldArgs }()
+		os.Args = []string{"fcs-cli", "title"}
 
 		var buf bytes.Buffer
 		run(&buf)

@@ -12,16 +12,10 @@ import (
 	"strings"
 )
 
-func printTitles(buf io.Writer, fileName string) error {
-	fp, err := os.Open(fileName)
-	if err != nil {
-		return err
-	}
-	defer fp.Close()
-
+func printTitles(buf io.Writer, fd io.Reader) {
 	var allTitles []string
 
-	scanner := bufio.NewScanner(fp)
+	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.HasPrefix(line, "#") {
@@ -36,23 +30,15 @@ func printTitles(buf io.Writer, fileName string) error {
 			}
 		}
 	}
-
-	return nil
 }
 
-func printContents(buf io.Writer, fileName string, title string) error {
-	fp, err := os.Open(fileName)
-	if err != nil {
-		return err
-	}
-	defer fp.Close()
-
+func printContents(buf io.Writer, fd io.Reader, title string) {
 	isScope := false
 	isBlank := false
 
 	r := regexp.MustCompile(fmt.Sprintf("^#* %s$", title))
 
-	scanner := bufio.NewScanner(fp)
+	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
 		line := scanner.Text()
 
@@ -74,8 +60,6 @@ func printContents(buf io.Writer, fileName string, title string) error {
 			fmt.Fprintln(buf, line)
 		}
 	}
-
-	return nil
 }
 
 func run(buf io.Writer) error {
@@ -89,14 +73,16 @@ func run(buf io.Writer) error {
 	}
 
 	fileName := filepath.Join(home, "fcnotes.md")
-	if len(args) == 1 {
-		err = printContents(buf, fileName, args[0])
-	} else {
-		err = printTitles(buf, fileName)
-	}
-
+	fd, err := os.Open(fileName)
 	if err != nil {
 		return err
+	}
+	defer fd.Close()
+
+	if len(args) == 1 {
+		printContents(buf, fd, args[0])
+	} else {
+		printTitles(buf, fd)
 	}
 
 	return nil
