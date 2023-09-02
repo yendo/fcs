@@ -20,19 +20,19 @@ line two
 
 ## same title
 
-contents 1
+1st
 
 ## same title
 
-contents 2
+2nd
 
-## other title
+### other heading level
 
-other contents
+contents
 
 ## same title
 
-contents 3
+3rd
 
 ##
 

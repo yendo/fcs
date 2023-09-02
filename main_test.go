@@ -27,7 +27,7 @@ title
 long title one
 contents have blank lines
 same title
-other title
+other heading level
 no contents
 no contents2
 no_space_title
@@ -38,29 +38,30 @@ no blank line between title and contents
 func TestPrintContents(t *testing.T) {
 	fileName := "test/test_fcnotes.md"
 
-	tests := []struct {
+	testCases := []struct {
 		title    string
 		contents string
 	}{
 		{"## title", "## title\n\n" + "contents\n"},
 		{"## long title one", "## long title one\n\n" + "line one\nline two\n"},
 		{"## contents have blank lines", "## contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
-		{"## same title", "## same title\n\ncontents 1\n\n" + "## same title\n\ncontents 2\n\n" + "## same title\n\ncontents 3\n"},
-		{"## other title", "## other title\n\n" + "other contents\n"},
+		{"## same title", "## same title\n\n1st\n\n" + "## same title\n\n2nd\n\n" + "## same title\n\n3rd\n"},
+		{"### other heading level", "### other heading level\n\n" + "contents\n"},
 		{"##", ""},
 		{"## no contents", "## no contents\n"},
 		{"##no_space_title", ""},
 		{"## no blank line between title and contents", "## no blank line between title and contents\n" + "contents\n"},
 	}
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			var buf bytes.Buffer
+			fd, err := os.Open(fileName)
+			require.NoError(t, err)
+			defer fd.Close()
 
-	for _, tt := range tests {
-		var buf bytes.Buffer
-		fd, err := os.Open(fileName)
-		require.NoError(t, err)
-		defer fd.Close()
-
-		printContents(&buf, fd, strings.TrimLeft(tt.title, "# "))
-		assert.Equal(t, tt.contents, buf.String())
+			printContents(&buf, fd, strings.TrimLeft(tc.title, "# "))
+			assert.Equal(t, tc.contents, buf.String())
+		})
 	}
 }
 
@@ -112,7 +113,7 @@ title
 long title one
 contents have blank lines
 same title
-other title
+other heading level
 no contents
 no contents2
 no_space_title
