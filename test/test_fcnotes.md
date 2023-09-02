@@ -1,15 +1,13 @@
-# notes
-
-## title
+# title
 
 contents
 
-## long title one
+# long title one
 
 line one
 line two
 
-## contents have blank lines
+# contents have blank lines
 
 
 1st line
@@ -18,37 +16,37 @@ line two
 2nd line
 
 
-## same title
+# same title
 
 1st
 
-## same title
+# same title
 
 2nd
 
-### other heading level
+## other heading level
 
 contents
 
-## title has trailing spaces  
+# title has trailing spaces  
 
 The contents have trailing spaces.  
 
-## same title
+# same title
 
 3rd
 
-##
+#
 
 no title
 
-## no contents
+# no contents
 
-## no contents2
+# no contents2
 
 ##no_space_title
 
 The contents are ignored.
 
-## no blank line between title and contents
+# no blank line between title and contents
 contents

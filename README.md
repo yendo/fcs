@@ -51,11 +51,11 @@ However, all you really need are the titles of each note in the heading
 and the content below it.
 
 ``` markdown
-## title1
+# title1
 
 contents1
 
-## title2
+# title2
 
 contents2
 ```

@@ -13,8 +13,7 @@ import (
 )
 
 func getExpectedTitles() string {
-	titles := `notes
-title
+	titles := `title
 long title one
 contents have blank lines
 same title
@@ -49,16 +48,16 @@ func TestPrintContents(t *testing.T) {
 		title    string
 		contents string
 	}{
-		{"## title", "## title\n\n" + "contents\n"},
-		{"## long title one", "## long title one\n\n" + "line one\nline two\n"},
-		{"## contents have blank lines", "## contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
-		{"## same title", "## same title\n\n1st\n\n" + "## same title\n\n2nd\n\n" + "## same title\n\n3rd\n"},
-		{"### other heading level", "### other heading level\n\n" + "contents\n"},
-		{"### title has trailing spaces  ", "## title has trailing spaces  \n\n" + "The contents have trailing spaces.  \n"},
-		{"##", ""},
-		{"## no contents", "## no contents\n"},
-		{"##no_space_title", ""},
-		{"## no blank line between title and contents", "## no blank line between title and contents\n" + "contents\n"},
+		{"# title", "# title\n\n" + "contents\n"},
+		{"# long title one", "# long title one\n\n" + "line one\nline two\n"},
+		{"# contents have blank lines", "# contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
+		{"# same title", "# same title\n\n1st\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
+		{"## other heading level", "## other heading level\n\n" + "contents\n"},
+		{"# title has trailing spaces  ", "# title has trailing spaces  \n\n" + "The contents have trailing spaces.  \n"},
+		{"#", ""},
+		{"# no contents", "# no contents\n"},
+		{"#no_space_title", ""},
+		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.title, func(t *testing.T) {
@@ -132,7 +131,7 @@ func TestRun(t *testing.T) {
 		err := run(&buf)
 
 		assert.NoError(t, err)
-		assert.Equal(t, "## title\n\ncontents\n", buf.String())
+		assert.Equal(t, "# title\n\ncontents\n", buf.String())
 	})
 
 	t.Run("with two args", func(t *testing.T) {
