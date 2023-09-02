@@ -62,17 +62,31 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 	}
 }
 
+func getNotesFile() (string, error) {
+	fileName := os.Getenv("FCS_NOTES_FILE")
+	if fileName != "" {
+		return fileName, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	fileName = filepath.Join(home, "fcnotes.md")
+	return fileName, nil
+}
+
 func run(buf io.Writer) error {
 	flag.Parse()
 	args := flag.Args()
 	var err error
 
-	home, err := os.UserHomeDir()
+	fileName, err := getNotesFile()
 	if err != nil {
 		return err
 	}
 
-	fileName := filepath.Join(home, "fcnotes.md")
 	fd, err := os.Open(fileName)
 	if err != nil {
 		return err

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -62,9 +63,32 @@ func TestPrintContents(t *testing.T) {
 	}
 }
 
+func TestGetFcsFile(t *testing.T) {
+
+	t.Run("set from environment variable", func(t *testing.T) {
+		expectedFileName := "test_file_from_env.md"
+		t.Setenv("FCS_NOTES_FILE", expectedFileName)
+
+		fileName, err := getNotesFile()
+		assert.NoError(t, err)
+		assert.Equal(t, expectedFileName, fileName)
+	})
+
+	t.Run("default filename", func(t *testing.T) {
+		home, err := os.UserHomeDir()
+		require.NoError(t, err)
+
+		fileName, err := getNotesFile()
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(home, "fcnotes.md"), fileName)
+	})
+}
+
 func TestRun(t *testing.T) {
 
 	t.Run("no args", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+
 		var buf bytes.Buffer
 		run(&buf)
 
@@ -82,6 +106,8 @@ no blank line between title and contents
 	})
 
 	t.Run("with a arg", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+
 		oldArgs := os.Args
 		defer func() { os.Args = oldArgs }()
 		os.Args = []string{"fcs-cli", "title"}

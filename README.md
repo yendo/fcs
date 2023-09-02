@@ -16,7 +16,13 @@ Pressing enter outputs the note to standard output.
 
 Install [fzf](https://github.com/junegunn/fzf) which is required to use fcs.
 
-Copy the script `fcs-cli` to a directory with a path.
+Build the command `fcs-cli` with Go 1.21.
+
+``` sh
+go build -o fcs-cli
+```
+
+Copy the command to a directory with a path.
 
 ``` sh
 install fcs-cli ~/.local/bin/
@@ -31,7 +37,14 @@ fcs() {
 }
 ```
 
-## Notes format
+## Notes specification
+
+### File
+
+The default notes file is `~/fcnotes.md`.
+The file can be changed by the environment variable `FCS_NOTES_FILE`.
+
+### Format
 
 The format of notes is similar to markdown.
 However, all you really need are the titles of each note in the heading
