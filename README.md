@@ -16,13 +16,9 @@ Pressing enter outputs the note to standard output.
 
 Install [fzf](https://github.com/junegunn/fzf) which is required to use fcs.
 
-Build the command `fcs-cli` with Go 1.21.
+Download the fcs archive from [GitHub Releases](https://github.com/yendo/fcs/releases) and extract it.
 
-``` sh
-go build -o fcs-cli
-```
-
-Copy the command to a directory with a path.
+Copy the command `fcs-cli` to a directory with a path.
 
 ``` sh
 install fcs-cli ~/.local/bin/
@@ -58,4 +54,18 @@ contents1
 # title2
 
 contents2
+```
+
+## Develop
+
+Build the command `fcs-cli` with Go 1.21.
+
+``` sh
+make
+```
+
+Unit test.
+
+``` sh
+make test
 ```
