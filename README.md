@@ -58,14 +58,20 @@ contents2
 
 ## Develop
 
-Build the command `fcs-cli` with Go 1.21.
+Build the command `fcs-cli` with Go 1.21:
 
 ``` sh
 make
 ```
 
-Unit test.
+Unit test:
 
 ``` sh
 make test
+```
+
+Integration test:
+
+``` sh
+make integration-test
 ```

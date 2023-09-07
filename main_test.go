@@ -10,23 +10,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yendo/fcs/test"
 )
-
-func getExpectedTitles() string {
-	titles := `title
-long title one
-contents have blank lines
-same title
-other heading level
-title has trailing spaces
-no contents
-no contents2
-no_space_title
-no blank line between title and contents
-`
-
-	return strings.Replace(titles, "trailing spaces", "trailing spaces  ", 1)
-}
 
 func TestPrintTitles(t *testing.T) {
 	var buf bytes.Buffer
@@ -38,7 +24,7 @@ func TestPrintTitles(t *testing.T) {
 
 	printTitles(&buf, fd)
 
-	assert.Equal(t, getExpectedTitles(), buf.String())
+	assert.Equal(t, test.GetExpectedTitles(), buf.String())
 }
 
 func TestPrintContents(t *testing.T) {
@@ -117,10 +103,10 @@ func TestRun(t *testing.T) {
 		err := run(&buf)
 
 		assert.NoError(t, err)
-		assert.Equal(t, getExpectedTitles(), buf.String())
+		assert.Equal(t, test.GetExpectedTitles(), buf.String())
 	})
 
-	t.Run("with a arg", func(t *testing.T) {
+	t.Run("with an arg", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
 
 		oldArgs := os.Args
