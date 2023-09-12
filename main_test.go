@@ -43,6 +43,7 @@ func TestPrintContents(t *testing.T) {
 		{"#", ""},
 		{"# no contents", "# no contents\n"},
 		{"#no_space_title", ""},
+		{"#fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
 		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
 	}
 	for _, tc := range testCases {

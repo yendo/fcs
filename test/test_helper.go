@@ -12,6 +12,7 @@ title has trailing spaces
 no contents
 no contents2
 no_space_title
+fenced code block
 no blank line between title and contents
 `
 
