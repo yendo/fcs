@@ -21,9 +21,12 @@ func printTitles(buf io.Writer, fd io.Reader) {
 	var allTitles []string
 
 	scanner := bufio.NewScanner(fd)
+	isFenced := false
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.HasPrefix(line, "#") {
+
+		if strings.HasPrefix(line, "#") && !isFenced {
 			title := strings.TrimLeft(line, "# ")
 			if title == "" {
 				continue
@@ -34,11 +37,16 @@ func printTitles(buf io.Writer, fd io.Reader) {
 				allTitles = append(allTitles, title)
 			}
 		}
+
+		if strings.HasPrefix(line, "```") {
+			isFenced = !isFenced
+		}
 	}
 }
 
 func printContents(buf io.Writer, fd io.Reader, title string) {
 	isScope := false
+	isFenced := false
 	isBlank := false
 
 	r := regexp.MustCompile(fmt.Sprintf("^#* %s$", title))
@@ -47,11 +55,13 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if r.MatchString(line) {
+		if r.MatchString(line) && !isFenced {
 			isScope = true
 		} else if isScope {
-			if strings.HasPrefix(line, "#") {
+			if strings.HasPrefix(line, "#") && !isFenced {
 				isScope = false
+			} else if strings.HasPrefix(line, "```") {
+				isFenced = !isFenced
 			} else if line == "" {
 				isBlank = true
 			}

@@ -48,5 +48,11 @@ no title
 
 The contents are ignored.
 
+# fenced code block
+
+```
+# fenced heading
+```
+
 # no blank line between title and contents
 contents
