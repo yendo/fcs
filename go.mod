@@ -2,7 +2,10 @@ module github.com/yendo/fcs
 
 go 1.21
 
-require github.com/stretchr/testify v1.8.4
+require (
+	github.com/stretchr/testify v1.8.4
+	mvdan.cc/xurls/v2 v2.5.0
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

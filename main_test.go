@@ -59,6 +59,18 @@ func TestPrintContents(t *testing.T) {
 	}
 }
 
+func TestPrintFirstURL(t *testing.T) {
+	fileName := "test/test_fcnotes.md"
+
+	var buf bytes.Buffer
+	fd, err := os.Open(fileName)
+	require.NoError(t, err)
+	defer fd.Close()
+
+	printFirstURL(&buf, fd, "url")
+	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+}
+
 func TestGetFcsFile(t *testing.T) {
 
 	t.Run("set from environment variable", func(t *testing.T) {
@@ -95,6 +107,38 @@ func TestRun(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, true, *showVersion)
 		assert.Equal(t, version+"\n", buf.String())
+	})
+
+	t.Run("with url flag", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+		flag.CommandLine.Set("u", "true")
+		defer flag.CommandLine.Set("u", "false")
+
+		oldArgs := os.Args
+		defer func() { os.Args = oldArgs }()
+		var buf bytes.Buffer
+
+		t.Run("with no args", func(t *testing.T) {
+			os.Args = []string{"fcs-cli", "-u"}
+
+			err := run(&buf)
+
+			assert.Error(t, err)
+			assert.EqualError(t, err, "invalid number of arguments")
+			assert.Equal(t, true, *showURL)
+			assert.Equal(t, "", buf.String())
+		})
+
+		t.Run("with a arg", func(t *testing.T) {
+			os.Args = []string{"fcs-cli", "-u", "url"}
+
+			err := run(&buf)
+
+			assert.NoError(t, err)
+			assert.Equal(t, true, *showURL)
+			assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+		})
+
 	})
 
 	t.Run("without args", func(t *testing.T) {
