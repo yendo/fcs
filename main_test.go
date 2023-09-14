@@ -72,7 +72,6 @@ func TestPrintFirstURL(t *testing.T) {
 }
 
 func TestGetFcsFile(t *testing.T) {
-
 	t.Run("set from environment variable", func(t *testing.T) {
 		expectedFileName := "test_file_from_env.md"
 		t.Setenv("FCS_NOTES_FILE", expectedFileName)
@@ -95,7 +94,6 @@ func TestGetFcsFile(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-
 	t.Run("with version flag", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
 		flag.CommandLine.Set("v", "true")
@@ -138,7 +136,6 @@ func TestRun(t *testing.T) {
 			assert.Equal(t, true, *showURL)
 			assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
 		})
-
 	})
 
 	t.Run("without args", func(t *testing.T) {

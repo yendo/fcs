@@ -16,9 +16,9 @@ import (
 )
 
 var (
-	version     string = "unknown"
-	showVersion *bool  = flag.Bool("v", false, "output version")
-	showURL     *bool  = flag.Bool("u", false, "output first URL from a note")
+	version     = "unknown"
+	showVersion = flag.Bool("v", false, "output version")
+	showURL     = flag.Bool("u", false, "output first URL from a note")
 )
 
 func printTitles(buf io.Writer, fd io.Reader) {
@@ -151,8 +151,7 @@ func run(buf io.Writer) error {
 func main() {
 	exitCode := 0
 
-	err := run(os.Stdout)
-	if err != nil {
+	if err := run(os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		exitCode = 1
 	}
