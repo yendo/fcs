@@ -7,6 +7,10 @@ contents
 line one
 line two
 
+# title has regexp meta chars $
+
+line
+
 # contents have blank lines
 
 

@@ -53,7 +53,7 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 	isFenced := false
 	isBlank := false
 
-	r := regexp.MustCompile(fmt.Sprintf("^#* %s$", title))
+	r := regexp.MustCompile(fmt.Sprintf("^#* %s$", regexp.QuoteMeta(title)))
 
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {

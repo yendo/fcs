@@ -5,6 +5,7 @@ import "strings"
 func GetExpectedTitles() string {
 	titles := `title
 long title one
+title has regexp meta chars $
 contents have blank lines
 same title
 other heading level
