@@ -7,7 +7,7 @@ contents
 line one
 line two
 
-# title has regexp meta chars $
+# title has regular expression meta chars $
 
 line
 
@@ -58,7 +58,7 @@ The contents are ignored.
 # fenced heading
 ```
 
-# url
+# URL
 
 fcs: http://github.com/yendo/fcs/
 github: http://github.com/

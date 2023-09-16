@@ -36,7 +36,7 @@ func TestPrintContents(t *testing.T) {
 	}{
 		{"# title", "# title\n\n" + "contents\n"},
 		{"# long title one", "# long title one\n\n" + "line one\nline two\n"},
-		{"# title has regexp meta chars $", "# title has regexp meta chars $\n\n" + "line\n"},
+		{"# title has regular expression meta chars $", "# title has regular expression meta chars $\n\n" + "line\n"},
 		{"# contents have blank lines", "# contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
 		{"# same title", "# same title\n\n1st\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
 		{"## other heading level", "## other heading level\n\n" + "contents\n"},
@@ -68,7 +68,7 @@ func TestPrintFirstURL(t *testing.T) {
 	require.NoError(t, err)
 	defer fd.Close()
 
-	printFirstURL(&buf, fd, "url")
+	printFirstURL(&buf, fd, "URL")
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
 }
 
@@ -129,7 +129,7 @@ func TestRun(t *testing.T) {
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
-			os.Args = []string{"fcs-cli", "-u", "url"}
+			os.Args = []string{"fcs-cli", "-u", "URL"}
 
 			err := run(&buf)
 

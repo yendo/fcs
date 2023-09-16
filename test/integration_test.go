@@ -49,7 +49,7 @@ func TestCmd(t *testing.T) {
 		},
 		{
 			title:   "with url flag and an arg",
-			options: []string{"-u", "url"},
+			options: []string{"-u", "URL"},
 			err:     false,
 			stdout:  "http://github.com/yendo/fcs/\n",
 			stderr:  "",
