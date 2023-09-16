@@ -5,6 +5,7 @@ import "strings"
 func GetExpectedTitles() string {
 	titles := `title
 long title one
+title has regular expression meta chars $
 contents have blank lines
 same title
 other heading level
@@ -13,7 +14,7 @@ no contents
 no contents2
 no_space_title
 fenced code block
-url
+URL
 no blank line between title and contents
 `
 

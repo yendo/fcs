@@ -7,6 +7,10 @@ contents
 line one
 line two
 
+# title has regular expression meta chars $
+
+line
+
 # contents have blank lines
 
 
@@ -54,7 +58,7 @@ The contents are ignored.
 # fenced heading
 ```
 
-# url
+# URL
 
 fcs: http://github.com/yendo/fcs/
 github: http://github.com/
