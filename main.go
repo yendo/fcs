@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -10,11 +11,14 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"mvdan.cc/xurls/v2"
 )
 
 var (
-	version     string = "unknown"
-	showVersion *bool  = flag.Bool("v", false, "Show version")
+	version     = "unknown"
+	showVersion = flag.Bool("v", false, "output version")
+	showURL     = flag.Bool("u", false, "output first URL from a note")
 )
 
 func printTitles(buf io.Writer, fd io.Reader) {
@@ -77,6 +81,18 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 	}
 }
 
+func printFirstURL(buf io.Writer, fd io.Reader, title string) {
+	var b bytes.Buffer
+
+	printContents(&b, fd, title)
+
+	rxStrict := xurls.Strict()
+	url := rxStrict.FindString(b.String())
+	if url != "" {
+		fmt.Fprintln(buf, url)
+	}
+}
+
 func getNotesFile() (string, error) {
 	fileName := os.Getenv("FCS_NOTES_FILE")
 	if fileName != "" {
@@ -113,6 +129,13 @@ func run(buf io.Writer) error {
 	}
 	defer fd.Close()
 
+	if *showURL {
+		if len(args) != 1 {
+			return fmt.Errorf("invalid number of arguments")
+		}
+		printFirstURL(buf, fd, args[0])
+	}
+
 	switch len(args) {
 	case 0:
 		printTitles(buf, fd)
@@ -128,8 +151,7 @@ func run(buf io.Writer) error {
 func main() {
 	exitCode := 0
 
-	err := run(os.Stdout)
-	if err != nil {
+	if err := run(os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		exitCode = 1
 	}

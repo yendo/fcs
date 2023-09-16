@@ -54,5 +54,10 @@ The contents are ignored.
 # fenced heading
 ```
 
+# url
+
+fcs: http://github.com/yendo/fcs/
+github: http://github.com/
+
 # no blank line between title and contents
 contents

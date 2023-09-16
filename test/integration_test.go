@@ -41,6 +41,20 @@ func TestCmd(t *testing.T) {
 			stderr:  "",
 		},
 		{
+			title:   "with url flag and no arg",
+			options: []string{"-u"},
+			err:     true,
+			stdout:  "",
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with url flag and an arg",
+			options: []string{"-u", "url"},
+			err:     false,
+			stdout:  "http://github.com/yendo/fcs/\n",
+			stderr:  "",
+		},
+		{
 			title:   "without args",
 			options: []string{},
 			err:     false,
