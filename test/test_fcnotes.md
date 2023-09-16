@@ -63,5 +63,16 @@ The contents are ignored.
 fcs: http://github.com/yendo/fcs/
 github: http://github.com/
 
+# command line
+
+```sh
+ls -l | nl
+```
+# command line with $
+
+```sh
+$ date
+```
+
 # no blank line between title and contents
 contents

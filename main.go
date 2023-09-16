@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -16,9 +17,13 @@ import (
 )
 
 var (
-	version     = "unknown"
+	version = "unknown"
+
 	showVersion = flag.Bool("v", false, "output version")
 	showURL     = flag.Bool("u", false, "output first URL from a note")
+	showCmd     = flag.Bool("c", false, "output first command from a note")
+
+	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
 )
 
 func printTitles(buf io.Writer, fd io.Reader) {
@@ -93,6 +98,46 @@ func printFirstURL(buf io.Writer, fd io.Reader, title string) {
 	}
 }
 
+func printFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
+	var b bytes.Buffer
+	isFenced := false
+
+	printContents(&b, fd, title)
+	scanner := bufio.NewScanner(&b)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if isShellCodeBlockBegin(line) {
+			isFenced = true
+			continue
+		} else if strings.HasPrefix(line, "```") && isFenced {
+			break
+		}
+
+		if isFenced {
+			fmt.Fprintln(buf, strings.TrimLeft(line, "$ "))
+		}
+	}
+}
+
+var reShellCodeBlock = regexp.MustCompile("^```\\s*(\\S+).*$")
+
+func isShellCodeBlockBegin(line string) bool {
+	shellList := []string{
+		"shell", "sh", "shell-script", "bash", "zsh",
+		"powershell", "posh", "pwsh",
+		"shellsession", "console",
+	}
+
+	match := reShellCodeBlock.FindStringSubmatch(line)
+	if len(match) == 0 {
+		return false
+	}
+
+	return slices.Contains(shellList, match[1])
+}
+
 func getNotesFile() (string, error) {
 	fileName := os.Getenv("FCS_NOTES_FILE")
 	if fileName != "" {
@@ -129,11 +174,18 @@ func run(buf io.Writer) error {
 	}
 	defer fd.Close()
 
-	if *showURL {
+	if *showURL || *showCmd {
 		if len(args) != 1 {
-			return fmt.Errorf("invalid number of arguments")
+			return ErrInvalidNumberOfArgs
 		}
-		printFirstURL(buf, fd, args[0])
+
+		if *showURL {
+			printFirstURL(buf, fd, args[0])
+		} else if *showCmd {
+			printFirstCmdLine(buf, fd, args[0])
+		}
+
+		return nil
 	}
 
 	switch len(args) {
@@ -142,7 +194,7 @@ func run(buf io.Writer) error {
 	case 1:
 		printContents(buf, fd, args[0])
 	default:
-		return fmt.Errorf("invalid number of arguments")
+		return ErrInvalidNumberOfArgs
 	}
 
 	return nil

@@ -55,6 +55,20 @@ func TestCmd(t *testing.T) {
 			stderr:  "",
 		},
 		{
+			title:   "with cmd flag and no arg",
+			options: []string{"-c"},
+			err:     true,
+			stdout:  "",
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with cmd flag and an arg",
+			options: []string{"-c", "command line"},
+			err:     false,
+			stdout:  "ls -l | nl\n",
+			stderr:  "",
+		},
+		{
 			title:   "without args",
 			options: []string{},
 			err:     false,

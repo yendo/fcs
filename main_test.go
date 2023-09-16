@@ -10,7 +10,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"github.com/yendo/fcs/test"
 )
 
@@ -44,7 +43,9 @@ func TestPrintContents(t *testing.T) {
 		{"#", ""},
 		{"# no contents", "# no contents\n"},
 		{"#no_space_title", ""},
-		{"#fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
+		{"# fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
+		{"# URL", "# URL\n\n" + "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
+		{"# command line", "# command line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
 		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
 	}
 	for _, tc := range testCases {
@@ -70,6 +71,48 @@ func TestPrintFirstURL(t *testing.T) {
 
 	printFirstURL(&buf, fd, "URL")
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+}
+
+func TestPrintFirstCmdLine(t *testing.T) {
+	fileName := "test/test_fcnotes.md"
+
+	var buf bytes.Buffer
+	fd, err := os.Open(fileName)
+	require.NoError(t, err)
+	defer fd.Close()
+
+	printFirstCmdLine(&buf, fd, "command line")
+	assert.Equal(t, "ls -l | nl\n", buf.String())
+}
+
+func TestIsShellCodeBlockBegin(t *testing.T) {
+	tests := []struct {
+		fence  string
+		result bool
+	}{
+		{fence: "```shell", result: true},
+		{fence: "``` shell", result: true},
+		{fence: "````shell", result: false},
+		{fence: "```sh", result: true},
+		{fence: "```shell-script", result: true},
+		{fence: "```bash", result: true},
+		{fence: "```zsh", result: true},
+		{fence: "```powershell", result: true},
+		{fence: "```posh", result: true},
+		{fence: "```pwsh", result: true},
+		{fence: "```shellsession", result: true},
+		{fence: "```bash session", result: true},
+		{fence: "```console", result: true},
+		{fence: "```", result: false},
+		{fence: "```go", result: false},
+		{fence: "```sharp", result: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.fence, func(t *testing.T) {
+			assert.Equal(t, tt.result, isShellCodeBlockBegin(tt.fence))
+		})
+	}
 }
 
 func TestGetFcsFile(t *testing.T) {
@@ -136,6 +179,49 @@ func TestRun(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, true, *showURL)
 			assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+		})
+	})
+
+	t.Run("with cmd flag", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+		flag.CommandLine.Set("c", "true")
+		defer flag.CommandLine.Set("c", "false")
+
+		oldArgs := os.Args
+		defer func() { os.Args = oldArgs }()
+
+		t.Run("with no args", func(t *testing.T) {
+			var buf bytes.Buffer
+			os.Args = []string{"fcs-cli", "-c"}
+
+			err := run(&buf)
+
+			assert.Error(t, err)
+			assert.EqualError(t, err, "invalid number of arguments")
+			assert.Equal(t, true, *showCmd)
+			assert.Equal(t, "", buf.String())
+		})
+
+		t.Run("with a arg", func(t *testing.T) {
+			var buf bytes.Buffer
+			os.Args = []string{"fcs-cli", "-c", "command line"}
+
+			err := run(&buf)
+
+			assert.NoError(t, err)
+			assert.Equal(t, true, *showCmd)
+			assert.Equal(t, "ls -l | nl\n", buf.String())
+		})
+
+		t.Run("with a arg has $", func(t *testing.T) {
+			var buf bytes.Buffer
+			os.Args = []string{"fcs-cli", "-c", "command line with $"}
+
+			err := run(&buf)
+
+			assert.NoError(t, err)
+			assert.Equal(t, true, *showCmd)
+			assert.Equal(t, "date\n", buf.String())
 		})
 	})
 
