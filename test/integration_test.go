@@ -93,8 +93,12 @@ func TestCmd(t *testing.T) {
 	}
 
 	for _, tc := range tests {
+		tc := tc
+
+		t.Setenv("FCS_NOTES_FILE", "test_fcnotes.md")
+
 		t.Run(tc.title, func(t *testing.T) {
-			t.Setenv("FCS_NOTES_FILE", "test_fcnotes.md")
+			t.Parallel()
 
 			buf := &stdBuf{}
 			cmd := buf.newTestCmd(tc.options...)

@@ -16,6 +16,8 @@ import (
 const testNotesFile = "test/test_fcnotes.md"
 
 func TestPrintTitles(t *testing.T) {
+	t.Parallel()
+
 	var buf bytes.Buffer
 
 	fd, err := os.Open(testNotesFile)
@@ -28,7 +30,7 @@ func TestPrintTitles(t *testing.T) {
 }
 
 func TestPrintContents(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		title    string
 		contents string
 	}{
@@ -47,8 +49,13 @@ func TestPrintContents(t *testing.T) {
 		{"# command line", "# command line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
 		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
 	}
-	for _, tc := range testCases {
+
+	for _, tc := range tests {
+		tc := tc
+
 		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
+
 			var buf bytes.Buffer
 
 			fd, err := os.Open(testNotesFile)
@@ -62,6 +69,8 @@ func TestPrintContents(t *testing.T) {
 }
 
 func TestPrintFirstURL(t *testing.T) {
+	t.Parallel()
+
 	var buf bytes.Buffer
 
 	fd, err := os.Open(testNotesFile)
@@ -73,6 +82,8 @@ func TestPrintFirstURL(t *testing.T) {
 }
 
 func TestPrintFirstCmdLine(t *testing.T) {
+	t.Parallel()
+
 	var buf bytes.Buffer
 
 	fd, err := os.Open(testNotesFile)
@@ -106,9 +117,12 @@ func TestIsShellCodeBlockBegin(t *testing.T) {
 		{fence: "```sharp", result: false},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.fence, func(t *testing.T) {
-			assert.Equal(t, tt.result, isShellCodeBlockBegin(tt.fence))
+	for _, tc := range tests {
+		tc := tc
+
+		t.Run(tc.fence, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tc.result, isShellCodeBlockBegin(tc.fence))
 		})
 	}
 }
