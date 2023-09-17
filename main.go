@@ -67,20 +67,23 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 		if r.MatchString(line) && !isFenced {
 			isScope = true
 		} else if isScope {
-			if strings.HasPrefix(line, "#") && !isFenced {
+			switch {
+			case strings.HasPrefix(line, "#") && !isFenced:
 				isScope = false
-			} else if strings.HasPrefix(line, "```") {
+			case strings.HasPrefix(line, "```"):
 				isFenced = !isFenced
-			} else if line == "" {
+			case line == "":
 				isBlank = true
 			}
 		}
 
 		if isScope && line != "" {
 			if isBlank {
-				fmt.Fprintln(buf, "")
 				isBlank = false
+
+				fmt.Fprintln(buf, "")
 			}
+
 			fmt.Fprintln(buf, line)
 		}
 	}
@@ -93,6 +96,7 @@ func printFirstURL(buf io.Writer, fd io.Reader, title string) {
 
 	rxStrict := xurls.Strict()
 	url := rxStrict.FindString(b.String())
+
 	if url != "" {
 		fmt.Fprintln(buf, url)
 	}
@@ -100,6 +104,7 @@ func printFirstURL(buf io.Writer, fd io.Reader, title string) {
 
 func printFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
 	var b bytes.Buffer
+
 	isFenced := false
 
 	printContents(&b, fd, title)
@@ -110,6 +115,7 @@ func printFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
 
 		if isShellCodeBlockBegin(line) {
 			isFenced = true
+
 			continue
 		} else if strings.HasPrefix(line, "```") && isFenced {
 			break
@@ -150,16 +156,19 @@ func getNotesFile() (string, error) {
 	}
 
 	fileName = filepath.Join(home, "fcnotes.md")
+
 	return fileName, nil
 }
 
 func run(buf io.Writer) error {
+	var err error
+
 	flag.Parse()
 	args := flag.Args()
-	var err error
 
 	if *showVersion {
 		fmt.Fprintln(buf, version)
+
 		return nil
 	}
 
@@ -204,8 +213,9 @@ func main() {
 	exitCode := 0
 
 	if err := run(os.Stdout); err != nil {
-		fmt.Fprintln(os.Stderr, err)
 		exitCode = 1
+
+		fmt.Fprintln(os.Stderr, err)
 	}
 
 	os.Exit(exitCode)

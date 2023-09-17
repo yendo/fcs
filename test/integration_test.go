@@ -18,6 +18,7 @@ type stdBuf struct {
 
 func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 	cmd := exec.Command("./fcs-cli", args...)
+
 	cmd.Env = append(os.Environ(), "GOCOVERDIR=../coverdir")
 	cmd.Stdout = &b.stdout
 	cmd.Stderr = &b.stderr
@@ -91,21 +92,22 @@ func TestCmd(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.title, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
 			t.Setenv("FCS_NOTES_FILE", "test_fcnotes.md")
 
 			buf := &stdBuf{}
-			cmd := buf.newTestCmd(tt.options...)
+			cmd := buf.newTestCmd(tc.options...)
 			err := cmd.Run()
 
-			if tt.err {
+			if tc.err {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
-			assert.Equal(t, tt.stdout, buf.stdout.String())
-			assert.Equal(t, tt.stderr, buf.stderr.String())
+
+			assert.Equal(t, tc.stdout, buf.stdout.String())
+			assert.Equal(t, tc.stderr, buf.stderr.String())
 		})
 	}
 }
@@ -127,6 +129,7 @@ func TestDefaultNoteExists(t *testing.T) {
 
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
+
 	if _, err := os.Stat(filepath.Join(home, "fcnotes.md")); err != nil {
 		t.Skip("the default fcnotes.md does not exist")
 	}

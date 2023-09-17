@@ -13,11 +13,12 @@ import (
 	"github.com/yendo/fcs/test"
 )
 
+const testNotesFile = "test/test_fcnotes.md"
+
 func TestPrintTitles(t *testing.T) {
 	var buf bytes.Buffer
 
-	fileName := "test/test_fcnotes.md"
-	fd, err := os.Open(fileName)
+	fd, err := os.Open(testNotesFile)
 	require.NoError(t, err)
 	defer fd.Close()
 
@@ -27,8 +28,6 @@ func TestPrintTitles(t *testing.T) {
 }
 
 func TestPrintContents(t *testing.T) {
-	fileName := "test/test_fcnotes.md"
-
 	testCases := []struct {
 		title    string
 		contents string
@@ -51,7 +50,8 @@ func TestPrintContents(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.title, func(t *testing.T) {
 			var buf bytes.Buffer
-			fd, err := os.Open(fileName)
+
+			fd, err := os.Open(testNotesFile)
 			require.NoError(t, err)
 			defer fd.Close()
 
@@ -62,10 +62,9 @@ func TestPrintContents(t *testing.T) {
 }
 
 func TestPrintFirstURL(t *testing.T) {
-	fileName := "test/test_fcnotes.md"
-
 	var buf bytes.Buffer
-	fd, err := os.Open(fileName)
+
+	fd, err := os.Open(testNotesFile)
 	require.NoError(t, err)
 	defer fd.Close()
 
@@ -74,10 +73,9 @@ func TestPrintFirstURL(t *testing.T) {
 }
 
 func TestPrintFirstCmdLine(t *testing.T) {
-	fileName := "test/test_fcnotes.md"
-
 	var buf bytes.Buffer
-	fd, err := os.Open(fileName)
+
+	fd, err := os.Open(testNotesFile)
 	require.NoError(t, err)
 	defer fd.Close()
 
@@ -131,20 +129,31 @@ func TestGetFcsFile(t *testing.T) {
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
-		fileName, err := getNotesFile()
+		filename, err := getNotesFile()
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, "fcnotes.md"), fileName)
+		assert.Equal(t, filepath.Join(home, "fcnotes.md"), filename)
 	})
 }
 
 func TestRun(t *testing.T) {
+	t.Setenv("FCS_NOTES_FILE", testNotesFile)
+
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+
 	t.Run("with version flag", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-		flag.CommandLine.Set("v", "true")
-		defer flag.CommandLine.Set("v", "false")
+		err := flag.CommandLine.Set("v", "true")
+		require.NoError(t, err)
+
+		defer func() {
+			err = flag.CommandLine.Set("v", "false")
+			require.NoError(t, err)
+		}()
+
+		os.Args = []string{"fcs-cli", "-v"}
 
 		var buf bytes.Buffer
-		err := run(&buf)
+		err = run(&buf)
 
 		assert.NoError(t, err)
 		assert.Equal(t, true, *showVersion)
@@ -152,17 +161,18 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with url flag", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-		flag.CommandLine.Set("u", "true")
-		defer flag.CommandLine.Set("u", "false")
+		err := flag.CommandLine.Set("u", "true")
+		require.NoError(t, err)
 
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
-		var buf bytes.Buffer
+		defer func() {
+			err = flag.CommandLine.Set("u", "false")
+			require.NoError(t, err)
+		}()
 
 		t.Run("with no args", func(t *testing.T) {
 			os.Args = []string{"fcs-cli", "-u"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.Error(t, err)
@@ -174,6 +184,7 @@ func TestRun(t *testing.T) {
 		t.Run("with a arg", func(t *testing.T) {
 			os.Args = []string{"fcs-cli", "-u", "URL"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
@@ -183,17 +194,18 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with cmd flag", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-		flag.CommandLine.Set("c", "true")
-		defer flag.CommandLine.Set("c", "false")
+		err := flag.CommandLine.Set("c", "true")
+		require.NoError(t, err)
 
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
+		defer func() {
+			err = flag.CommandLine.Set("c", "false")
+			require.NoError(t, err)
+		}()
 
 		t.Run("with no args", func(t *testing.T) {
-			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-c"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.Error(t, err)
@@ -203,9 +215,9 @@ func TestRun(t *testing.T) {
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
-			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-c", "command line"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
@@ -214,9 +226,9 @@ func TestRun(t *testing.T) {
 		})
 
 		t.Run("with a arg has $", func(t *testing.T) {
-			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-c", "command line with $"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
@@ -226,7 +238,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("without args", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+		os.Args = []string{"fcs-cli"}
 
 		var buf bytes.Buffer
 		err := run(&buf)
@@ -236,10 +248,6 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with an arg", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
 		os.Args = []string{"fcs-cli", "title"}
 
 		var buf bytes.Buffer
@@ -250,10 +258,6 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with two args", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
 		os.Args = []string{"fcs-cli", "title", "other"}
 
 		var buf bytes.Buffer
