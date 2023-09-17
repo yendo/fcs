@@ -112,6 +112,18 @@ func TestCmd(t *testing.T) {
 	}
 }
 
+func TestUserHomeDirNotExists(t *testing.T) {
+	t.Setenv("HOME", "")
+
+	buf := &stdBuf{}
+	cmd := buf.newTestCmd()
+	err := cmd.Run()
+
+	assert.Error(t, err)
+	assert.Empty(t, buf.stdout.String())
+	assert.Equal(t, "cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
+}
+
 func TestNotesNotExists(t *testing.T) {
 	t.Setenv("FCS_NOTES_FILE", "not_exists")
 
@@ -121,7 +133,7 @@ func TestNotesNotExists(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "open not_exists: no such file or directory\n", buf.stderr.String())
+	assert.Equal(t, "cannot access notes file: open not_exists: no such file or directory\n", buf.stderr.String())
 }
 
 func TestDefaultNoteExists(t *testing.T) {

@@ -141,6 +141,30 @@ func TestRun(t *testing.T) {
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
 
+	t.Run("cannot access UserHomeDir", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("HOME", "")
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "cannot access user home directory: $HOME is not defined")
+		assert.Empty(t, buf.String())
+	})
+
+	t.Run("cannot access notes file", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("HOME", "no_exits")
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "cannot access notes file: open no_exits/fcnotes.md: no such file or directory")
+		assert.Empty(t, buf.String())
+	})
+
 	t.Run("with version flag", func(t *testing.T) {
 		err := flag.CommandLine.Set("v", "true")
 		require.NoError(t, err)

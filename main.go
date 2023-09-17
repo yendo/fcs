@@ -152,7 +152,7 @@ func getNotesFile() (string, error) {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot access user home directory: %w", err)
 	}
 
 	fileName = filepath.Join(home, "fcnotes.md")
@@ -179,7 +179,7 @@ func run(buf io.Writer) error {
 
 	fd, err := os.Open(fileName)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot access notes file: %w", err)
 	}
 	defer fd.Close()
 
