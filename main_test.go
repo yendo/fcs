@@ -15,15 +15,38 @@ import (
 
 const testNotesFile = "test/test_fcnotes.md"
 
+func openTestNotesFile(t *testing.T) *os.File {
+	t.Helper()
+
+	fd, err := os.Open(testNotesFile)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err = fd.Close()
+		require.NoError(t, err)
+	})
+
+	return fd
+}
+
+func setCommandLineFlag(t *testing.T, f string) {
+	t.Helper()
+
+	err := flag.CommandLine.Set(f, "true")
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err = flag.CommandLine.Set(f, "false")
+		require.NoError(t, err)
+	})
+}
+
 func TestPrintTitles(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
 
-	fd, err := os.Open(testNotesFile)
-	require.NoError(t, err)
-	defer fd.Close()
-
+	fd := openTestNotesFile(t)
 	printTitles(&buf, fd)
 
 	assert.Equal(t, test.GetExpectedTitles(), buf.String())
@@ -58,10 +81,7 @@ func TestPrintContents(t *testing.T) {
 
 			var buf bytes.Buffer
 
-			fd, err := os.Open(testNotesFile)
-			require.NoError(t, err)
-			defer fd.Close()
-
+			fd := openTestNotesFile(t)
 			printContents(&buf, fd, strings.TrimLeft(tc.title, "# "))
 			assert.Equal(t, tc.contents, buf.String())
 		})
@@ -73,10 +93,7 @@ func TestPrintFirstURL(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	fd, err := os.Open(testNotesFile)
-	require.NoError(t, err)
-	defer fd.Close()
-
+	fd := openTestNotesFile(t)
 	printFirstURL(&buf, fd, "URL")
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
 }
@@ -86,10 +103,7 @@ func TestPrintFirstCmdLine(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	fd, err := os.Open(testNotesFile)
-	require.NoError(t, err)
-	defer fd.Close()
-
+	fd := openTestNotesFile(t)
 	printFirstCmdLine(&buf, fd, "command line")
 	assert.Equal(t, "ls -l | nl\n", buf.String())
 }
@@ -153,7 +167,10 @@ func TestRun(t *testing.T) {
 	t.Setenv("FCS_NOTES_FILE", testNotesFile)
 
 	oldArgs := os.Args
-	defer func() { os.Args = oldArgs }()
+
+	t.Cleanup(func() {
+		os.Args = oldArgs
+	})
 
 	t.Run("cannot access UserHomeDir", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "")
@@ -180,18 +197,12 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with version flag", func(t *testing.T) {
-		err := flag.CommandLine.Set("v", "true")
-		require.NoError(t, err)
-
-		defer func() {
-			err = flag.CommandLine.Set("v", "false")
-			require.NoError(t, err)
-		}()
+		setCommandLineFlag(t, "v")
 
 		os.Args = []string{"fcs-cli", "-v"}
 
 		var buf bytes.Buffer
-		err = run(&buf)
+		err := run(&buf)
 
 		assert.NoError(t, err)
 		assert.Equal(t, true, *showVersion)
@@ -199,13 +210,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with url flag", func(t *testing.T) {
-		err := flag.CommandLine.Set("u", "true")
-		require.NoError(t, err)
-
-		defer func() {
-			err = flag.CommandLine.Set("u", "false")
-			require.NoError(t, err)
-		}()
+		setCommandLineFlag(t, "u")
 
 		t.Run("with no args", func(t *testing.T) {
 			os.Args = []string{"fcs-cli", "-u"}
@@ -232,13 +237,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with cmd flag", func(t *testing.T) {
-		err := flag.CommandLine.Set("c", "true")
-		require.NoError(t, err)
-
-		defer func() {
-			err = flag.CommandLine.Set("c", "false")
-			require.NoError(t, err)
-		}()
+		setCommandLineFlag(t, "c")
 
 		t.Run("with no args", func(t *testing.T) {
 			os.Args = []string{"fcs-cli", "-c"}
