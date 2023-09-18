@@ -69,7 +69,7 @@ func TestPrintContents(t *testing.T) {
 		{"#no_space_title", ""},
 		{"# fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
 		{"# URL", "# URL\n\n" + "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
-		{"# command line", "# command line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
+		{"# command-line", "# command-line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
 		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
 	}
 
@@ -104,7 +104,7 @@ func TestPrintFirstCmdLine(t *testing.T) {
 	var buf bytes.Buffer
 
 	fd := openTestNotesFile(t)
-	printFirstCmdLine(&buf, fd, "command line")
+	printFirstCmdLine(&buf, fd, "command-line")
 	assert.Equal(t, "ls -l | nl\n", buf.String())
 }
 
@@ -252,7 +252,7 @@ func TestRun(t *testing.T) {
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
-			os.Args = []string{"fcs-cli", "-c", "command line"}
+			os.Args = []string{"fcs-cli", "-c", "command-line"}
 
 			var buf bytes.Buffer
 			err := run(&buf)
@@ -263,7 +263,7 @@ func TestRun(t *testing.T) {
 		})
 
 		t.Run("with a arg has $", func(t *testing.T) {
-			os.Args = []string{"fcs-cli", "-c", "command line with $"}
+			os.Args = []string{"fcs-cli", "-c", "command-line with $"}
 
 			var buf bytes.Buffer
 			err := run(&buf)

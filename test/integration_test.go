@@ -64,7 +64,7 @@ func TestCmd(t *testing.T) {
 		},
 		{
 			title:   "with cmd flag and an arg",
-			options: []string{"-c", "command line"},
+			options: []string{"-c", "command-line"},
 			err:     false,
 			stdout:  "ls -l | nl\n",
 			stderr:  "",
