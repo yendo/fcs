@@ -10,27 +10,50 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"github.com/yendo/fcs/test"
 )
 
+const testNotesFile = "test/test_fcnotes.md"
+
+func openTestNotesFile(t *testing.T) *os.File {
+	t.Helper()
+
+	fd, err := os.Open(testNotesFile)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err = fd.Close()
+		require.NoError(t, err)
+	})
+
+	return fd
+}
+
+func setCommandLineFlag(t *testing.T, f string) {
+	t.Helper()
+
+	err := flag.CommandLine.Set(f, "true")
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err = flag.CommandLine.Set(f, "false")
+		require.NoError(t, err)
+	})
+}
+
 func TestPrintTitles(t *testing.T) {
+	t.Parallel()
+
 	var buf bytes.Buffer
 
-	fileName := "test/test_fcnotes.md"
-	fd, err := os.Open(fileName)
-	require.NoError(t, err)
-	defer fd.Close()
-
+	fd := openTestNotesFile(t)
 	printTitles(&buf, fd)
 
 	assert.Equal(t, test.GetExpectedTitles(), buf.String())
 }
 
 func TestPrintContents(t *testing.T) {
-	fileName := "test/test_fcnotes.md"
-
-	testCases := []struct {
+	tests := []struct {
 		title    string
 		contents string
 	}{
@@ -44,16 +67,21 @@ func TestPrintContents(t *testing.T) {
 		{"#", ""},
 		{"# no contents", "# no contents\n"},
 		{"#no_space_title", ""},
-		{"#fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
+		{"# fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
+		{"# URL", "# URL\n\n" + "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
+		{"# command line", "# command line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
 		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
 	}
-	for _, tc := range testCases {
-		t.Run(tc.title, func(t *testing.T) {
-			var buf bytes.Buffer
-			fd, err := os.Open(fileName)
-			require.NoError(t, err)
-			defer fd.Close()
 
+	for _, tc := range tests {
+		tc := tc
+
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
+
+			var buf bytes.Buffer
+
+			fd := openTestNotesFile(t)
 			printContents(&buf, fd, strings.TrimLeft(tc.title, "# "))
 			assert.Equal(t, tc.contents, buf.String())
 		})
@@ -61,15 +89,56 @@ func TestPrintContents(t *testing.T) {
 }
 
 func TestPrintFirstURL(t *testing.T) {
-	fileName := "test/test_fcnotes.md"
+	t.Parallel()
 
 	var buf bytes.Buffer
-	fd, err := os.Open(fileName)
-	require.NoError(t, err)
-	defer fd.Close()
 
+	fd := openTestNotesFile(t)
 	printFirstURL(&buf, fd, "URL")
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+}
+
+func TestPrintFirstCmdLine(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	fd := openTestNotesFile(t)
+	printFirstCmdLine(&buf, fd, "command line")
+	assert.Equal(t, "ls -l | nl\n", buf.String())
+}
+
+func TestIsShellCodeBlockBegin(t *testing.T) {
+	tests := []struct {
+		fence  string
+		result bool
+	}{
+		{fence: "```shell", result: true},
+		{fence: "``` shell", result: true},
+		{fence: "````shell", result: false},
+		{fence: "```sh", result: true},
+		{fence: "```shell-script", result: true},
+		{fence: "```bash", result: true},
+		{fence: "```zsh", result: true},
+		{fence: "```powershell", result: true},
+		{fence: "```posh", result: true},
+		{fence: "```pwsh", result: true},
+		{fence: "```shellsession", result: true},
+		{fence: "```bash session", result: true},
+		{fence: "```console", result: true},
+		{fence: "```", result: false},
+		{fence: "```go", result: false},
+		{fence: "```sharp", result: false},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+
+		t.Run(tc.fence, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tc.result, isShellCodeBlockBegin(tc.fence))
+		})
+	}
 }
 
 func TestGetFcsFile(t *testing.T) {
@@ -88,17 +157,49 @@ func TestGetFcsFile(t *testing.T) {
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
-		fileName, err := getNotesFile()
+		filename, err := getNotesFile()
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, "fcnotes.md"), fileName)
+		assert.Equal(t, filepath.Join(home, "fcnotes.md"), filename)
 	})
 }
 
 func TestRun(t *testing.T) {
+	t.Setenv("FCS_NOTES_FILE", testNotesFile)
+
+	oldArgs := os.Args
+
+	t.Cleanup(func() {
+		os.Args = oldArgs
+	})
+
+	t.Run("cannot access UserHomeDir", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("HOME", "")
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "cannot access user home directory: $HOME is not defined")
+		assert.Empty(t, buf.String())
+	})
+
+	t.Run("cannot access notes file", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("HOME", "no_exits")
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "cannot access notes file: open no_exits/fcnotes.md: no such file or directory")
+		assert.Empty(t, buf.String())
+	})
+
 	t.Run("with version flag", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-		flag.CommandLine.Set("v", "true")
-		defer flag.CommandLine.Set("v", "false")
+		setCommandLineFlag(t, "v")
+
+		os.Args = []string{"fcs-cli", "-v"}
 
 		var buf bytes.Buffer
 		err := run(&buf)
@@ -109,17 +210,12 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with url flag", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-		flag.CommandLine.Set("u", "true")
-		defer flag.CommandLine.Set("u", "false")
-
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
-		var buf bytes.Buffer
+		setCommandLineFlag(t, "u")
 
 		t.Run("with no args", func(t *testing.T) {
 			os.Args = []string{"fcs-cli", "-u"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.Error(t, err)
@@ -131,6 +227,7 @@ func TestRun(t *testing.T) {
 		t.Run("with a arg", func(t *testing.T) {
 			os.Args = []string{"fcs-cli", "-u", "URL"}
 
+			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
@@ -139,8 +236,46 @@ func TestRun(t *testing.T) {
 		})
 	})
 
+	t.Run("with cmd flag", func(t *testing.T) {
+		setCommandLineFlag(t, "c")
+
+		t.Run("with no args", func(t *testing.T) {
+			os.Args = []string{"fcs-cli", "-c"}
+
+			var buf bytes.Buffer
+			err := run(&buf)
+
+			assert.Error(t, err)
+			assert.EqualError(t, err, "invalid number of arguments")
+			assert.Equal(t, true, *showCmd)
+			assert.Equal(t, "", buf.String())
+		})
+
+		t.Run("with a arg", func(t *testing.T) {
+			os.Args = []string{"fcs-cli", "-c", "command line"}
+
+			var buf bytes.Buffer
+			err := run(&buf)
+
+			assert.NoError(t, err)
+			assert.Equal(t, true, *showCmd)
+			assert.Equal(t, "ls -l | nl\n", buf.String())
+		})
+
+		t.Run("with a arg has $", func(t *testing.T) {
+			os.Args = []string{"fcs-cli", "-c", "command line with $"}
+
+			var buf bytes.Buffer
+			err := run(&buf)
+
+			assert.NoError(t, err)
+			assert.Equal(t, true, *showCmd)
+			assert.Equal(t, "date\n", buf.String())
+		})
+	})
+
 	t.Run("without args", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
+		os.Args = []string{"fcs-cli"}
 
 		var buf bytes.Buffer
 		err := run(&buf)
@@ -150,10 +285,6 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with an arg", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
 		os.Args = []string{"fcs-cli", "title"}
 
 		var buf bytes.Buffer
@@ -164,10 +295,6 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with two args", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "test/test_fcnotes.md")
-
-		oldArgs := os.Args
-		defer func() { os.Args = oldArgs }()
 		os.Args = []string{"fcs-cli", "title", "other"}
 
 		var buf bytes.Buffer

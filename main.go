@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -16,9 +17,13 @@ import (
 )
 
 var (
-	version     = "unknown"
+	version = "unknown"
+
 	showVersion = flag.Bool("v", false, "output version")
 	showURL     = flag.Bool("u", false, "output first URL from a note")
+	showCmd     = flag.Bool("c", false, "output first command from a note")
+
+	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
 )
 
 func printTitles(buf io.Writer, fd io.Reader) {
@@ -62,20 +67,23 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 		if r.MatchString(line) && !isFenced {
 			isScope = true
 		} else if isScope {
-			if strings.HasPrefix(line, "#") && !isFenced {
+			switch {
+			case strings.HasPrefix(line, "#") && !isFenced:
 				isScope = false
-			} else if strings.HasPrefix(line, "```") {
+			case strings.HasPrefix(line, "```"):
 				isFenced = !isFenced
-			} else if line == "" {
+			case line == "":
 				isBlank = true
 			}
 		}
 
 		if isScope && line != "" {
 			if isBlank {
-				fmt.Fprintln(buf, "")
 				isBlank = false
+
+				fmt.Fprintln(buf, "")
 			}
+
 			fmt.Fprintln(buf, line)
 		}
 	}
@@ -88,9 +96,52 @@ func printFirstURL(buf io.Writer, fd io.Reader, title string) {
 
 	rxStrict := xurls.Strict()
 	url := rxStrict.FindString(b.String())
+
 	if url != "" {
 		fmt.Fprintln(buf, url)
 	}
+}
+
+func printFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
+	var b bytes.Buffer
+
+	isFenced := false
+
+	printContents(&b, fd, title)
+	scanner := bufio.NewScanner(&b)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if isShellCodeBlockBegin(line) {
+			isFenced = true
+
+			continue
+		} else if strings.HasPrefix(line, "```") && isFenced {
+			break
+		}
+
+		if isFenced {
+			fmt.Fprintln(buf, strings.TrimLeft(line, "$ "))
+		}
+	}
+}
+
+var reShellCodeBlock = regexp.MustCompile("^```\\s*(\\S+).*$")
+
+func isShellCodeBlockBegin(line string) bool {
+	shellList := []string{
+		"shell", "sh", "shell-script", "bash", "zsh",
+		"powershell", "posh", "pwsh",
+		"shellsession", "console",
+	}
+
+	match := reShellCodeBlock.FindStringSubmatch(line)
+	if len(match) == 0 {
+		return false
+	}
+
+	return slices.Contains(shellList, match[1])
 }
 
 func getNotesFile() (string, error) {
@@ -101,20 +152,23 @@ func getNotesFile() (string, error) {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot access user home directory: %w", err)
 	}
 
 	fileName = filepath.Join(home, "fcnotes.md")
+
 	return fileName, nil
 }
 
 func run(buf io.Writer) error {
+	var err error
+
 	flag.Parse()
 	args := flag.Args()
-	var err error
 
 	if *showVersion {
 		fmt.Fprintln(buf, version)
+
 		return nil
 	}
 
@@ -125,15 +179,22 @@ func run(buf io.Writer) error {
 
 	fd, err := os.Open(fileName)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot access notes file: %w", err)
 	}
 	defer fd.Close()
 
-	if *showURL {
+	if *showURL || *showCmd {
 		if len(args) != 1 {
-			return fmt.Errorf("invalid number of arguments")
+			return ErrInvalidNumberOfArgs
 		}
-		printFirstURL(buf, fd, args[0])
+
+		if *showURL {
+			printFirstURL(buf, fd, args[0])
+		} else if *showCmd {
+			printFirstCmdLine(buf, fd, args[0])
+		}
+
+		return nil
 	}
 
 	switch len(args) {
@@ -142,7 +203,7 @@ func run(buf io.Writer) error {
 	case 1:
 		printContents(buf, fd, args[0])
 	default:
-		return fmt.Errorf("invalid number of arguments")
+		return ErrInvalidNumberOfArgs
 	}
 
 	return nil
@@ -152,8 +213,9 @@ func main() {
 	exitCode := 0
 
 	if err := run(os.Stdout); err != nil {
-		fmt.Fprintln(os.Stderr, err)
 		exitCode = 1
+
+		fmt.Fprintln(os.Stderr, err)
 	}
 
 	os.Exit(exitCode)

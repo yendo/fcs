@@ -18,6 +18,7 @@ type stdBuf struct {
 
 func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 	cmd := exec.Command("./fcs-cli", args...)
+
 	cmd.Env = append(os.Environ(), "GOCOVERDIR=../coverdir")
 	cmd.Stdout = &b.stdout
 	cmd.Stderr = &b.stderr
@@ -55,6 +56,20 @@ func TestCmd(t *testing.T) {
 			stderr:  "",
 		},
 		{
+			title:   "with cmd flag and no arg",
+			options: []string{"-c"},
+			err:     true,
+			stdout:  "",
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with cmd flag and an arg",
+			options: []string{"-c", "command line"},
+			err:     false,
+			stdout:  "ls -l | nl\n",
+			stderr:  "",
+		},
+		{
 			title:   "without args",
 			options: []string{},
 			err:     false,
@@ -77,23 +92,40 @@ func TestCmd(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.title, func(t *testing.T) {
-			t.Setenv("FCS_NOTES_FILE", "test_fcnotes.md")
+	for _, tc := range tests {
+		tc := tc
+
+		t.Setenv("FCS_NOTES_FILE", "test_fcnotes.md")
+
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
 
 			buf := &stdBuf{}
-			cmd := buf.newTestCmd(tt.options...)
+			cmd := buf.newTestCmd(tc.options...)
 			err := cmd.Run()
 
-			if tt.err {
+			if tc.err {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
-			assert.Equal(t, tt.stdout, buf.stdout.String())
-			assert.Equal(t, tt.stderr, buf.stderr.String())
+
+			assert.Equal(t, tc.stdout, buf.stdout.String())
+			assert.Equal(t, tc.stderr, buf.stderr.String())
 		})
 	}
+}
+
+func TestUserHomeDirNotExists(t *testing.T) {
+	t.Setenv("HOME", "")
+
+	buf := &stdBuf{}
+	cmd := buf.newTestCmd()
+	err := cmd.Run()
+
+	assert.Error(t, err)
+	assert.Empty(t, buf.stdout.String())
+	assert.Equal(t, "cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
 }
 
 func TestNotesNotExists(t *testing.T) {
@@ -105,7 +137,7 @@ func TestNotesNotExists(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "open not_exists: no such file or directory\n", buf.stderr.String())
+	assert.Equal(t, "cannot access notes file: open not_exists: no such file or directory\n", buf.stderr.String())
 }
 
 func TestDefaultNoteExists(t *testing.T) {
@@ -113,6 +145,7 @@ func TestDefaultNoteExists(t *testing.T) {
 
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
+
 	if _, err := os.Stat(filepath.Join(home, "fcnotes.md")); err != nil {
 		t.Skip("the default fcnotes.md does not exist")
 	}

@@ -15,6 +15,8 @@ no contents2
 no_space_title
 fenced code block
 URL
+command line
+command line with $
 no blank line between title and contents
 `
 

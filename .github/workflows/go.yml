@@ -32,7 +32,9 @@ jobs:
         run: make
 
       - name: Unit Test
-        run: make test-v
+        run: make unit-test-v
 
       - name: Integration Test
-        run: make integration-test
+        run: |
+          cp test/test_fcnotes.md "${HOME}/fcnotes.md"
+          make integration-test-v
