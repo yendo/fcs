@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,7 +23,7 @@ func openTestNotesFile(t *testing.T) *os.File {
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err = fd.Close()
+		err := fd.Close()
 		require.NoError(t, err)
 	})
 
@@ -36,7 +37,7 @@ func setCommandLineFlag(t *testing.T, f string) {
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err = flag.CommandLine.Set(f, "false")
+		err := flag.CommandLine.Set(f, "false")
 		require.NoError(t, err)
 	})
 }
@@ -53,6 +54,8 @@ func TestPrintTitles(t *testing.T) {
 }
 
 func TestPrintContents(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		title    string
 		contents string
@@ -109,6 +112,8 @@ func TestPrintFirstCmdLine(t *testing.T) {
 }
 
 func TestIsShellCodeBlockBegin(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		fence  string
 		result bool
@@ -139,6 +144,16 @@ func TestIsShellCodeBlockBegin(t *testing.T) {
 			assert.Equal(t, tc.result, isShellCodeBlockBegin(tc.fence))
 		})
 	}
+}
+
+func TestPrintLineNumber(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	fd := openTestNotesFile(t)
+	printLineNumber(&buf, fd, "URL")
+	assert.Equal(t, fmt.Sprintf("\"%s\" 61\n", testNotesFile), buf.String())
 }
 
 func TestGetFcsFile(t *testing.T) {

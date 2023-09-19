@@ -70,6 +70,20 @@ func TestCmd(t *testing.T) {
 			stderr:  "",
 		},
 		{
+			title:   "with line flag and no arg",
+			options: []string{"-l"},
+			err:     true,
+			stdout:  "",
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with line flag and an arg",
+			options: []string{"-l", "URL"},
+			err:     false,
+			stdout:  "\"test_fcnotes.md\" 61\n",
+			stderr:  "",
+		},
+		{
 			title:   "without args",
 			options: []string{},
 			err:     false,
@@ -104,12 +118,7 @@ func TestCmd(t *testing.T) {
 			cmd := buf.newTestCmd(tc.options...)
 			err := cmd.Run()
 
-			if tc.err {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-
+			assert.Equal(t, tc.err, err != nil)
 			assert.Equal(t, tc.stdout, buf.stdout.String())
 			assert.Equal(t, tc.stderr, buf.stderr.String())
 		})
@@ -117,6 +126,7 @@ func TestCmd(t *testing.T) {
 }
 
 func TestUserHomeDirNotExists(t *testing.T) {
+	t.Setenv("FCS_NOTES_FILE", "")
 	t.Setenv("HOME", "")
 
 	buf := &stdBuf{}

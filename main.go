@@ -19,9 +19,10 @@ import (
 var (
 	version = "unknown"
 
-	showVersion = flag.Bool("v", false, "output version")
-	showURL     = flag.Bool("u", false, "output first URL from a note")
-	showCmd     = flag.Bool("c", false, "output first command from a note")
+	showVersion = flag.Bool("v", false, "output the version")
+	showURL     = flag.Bool("u", false, "output the first URL from the note")
+	showCmd     = flag.Bool("c", false, "output the first command from the note")
+	showLoc     = flag.Bool("l", false, "output the note location")
 
 	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
 )
@@ -57,8 +58,7 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 	isScope := false
 	isFenced := false
 	isBlank := false
-
-	r := regexp.MustCompile(fmt.Sprintf("^#* %s$", regexp.QuoteMeta(title)))
+	r := getNoteTitleRegexp(title)
 
 	scanner := bufio.NewScanner(fd)
 	for scanner.Scan() {
@@ -144,6 +144,23 @@ func isShellCodeBlockBegin(line string) bool {
 	return slices.Contains(shellList, match[1])
 }
 
+func printLineNumber(buf io.Writer, fd *os.File, title string) {
+	c := 0
+	scanner := bufio.NewScanner(fd)
+	r := getNoteTitleRegexp(title)
+
+	for scanner.Scan() {
+		c++
+		line := scanner.Text()
+
+		if r.MatchString(line) {
+			fmt.Fprintf(buf, "%q %d\n", fd.Name(), c)
+
+			break
+		}
+	}
+}
+
 func getNotesFile() (string, error) {
 	fileName := os.Getenv("FCS_NOTES_FILE")
 	if fileName != "" {
@@ -160,9 +177,11 @@ func getNotesFile() (string, error) {
 	return fileName, nil
 }
 
-func run(buf io.Writer) error {
-	var err error
+func getNoteTitleRegexp(title string) *regexp.Regexp {
+	return regexp.MustCompile(fmt.Sprintf("^#* %s$", regexp.QuoteMeta(title)))
+}
 
+func run(buf io.Writer) error {
 	flag.Parse()
 	args := flag.Args()
 
@@ -183,15 +202,18 @@ func run(buf io.Writer) error {
 	}
 	defer fd.Close()
 
-	if *showURL || *showCmd {
+	if *showURL || *showCmd || *showLoc {
 		if len(args) != 1 {
 			return ErrInvalidNumberOfArgs
 		}
 
-		if *showURL {
+		switch {
+		case *showURL:
 			printFirstURL(buf, fd, args[0])
-		} else if *showCmd {
+		case *showCmd:
 			printFirstCmdLine(buf, fd, args[0])
+		case *showLoc:
+			printLineNumber(buf, fd, args[0])
 		}
 
 		return nil
