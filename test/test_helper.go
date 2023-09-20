@@ -10,20 +10,22 @@ import (
 
 const TestNotesFile = "test/test_fcnotes.md"
 
+// OpenTestNotesFile opens a test notes file.
 func OpenTestNotesFile(t *testing.T) *os.File {
 	t.Helper()
 
-	fd, err := os.Open(TestNotesFile)
+	file, err := os.Open(TestNotesFile)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := fd.Close()
+		err := file.Close()
 		require.NoError(t, err)
 	})
 
-	return fd
+	return file
 }
 
+// GetExpectedTitles returns the titles of the test notes.
 func GetExpectedTitles() string {
 	titles := `title
 long title one

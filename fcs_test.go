@@ -14,18 +14,18 @@ import (
 	"github.com/yendo/fcs/test"
 )
 
-func TestPrintTitles(t *testing.T) {
+func TestWriteTitles(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
 
-	fd := test.OpenTestNotesFile(t)
-	fcs.PrintTitles(&buf, fd)
+	file := test.OpenTestNotesFile(t)
+	fcs.WriteTitles(&buf, file)
 
 	assert.Equal(t, test.GetExpectedTitles(), buf.String())
 }
 
-func TestPrintContents(t *testing.T) {
+func TestWriteContents(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -56,30 +56,33 @@ func TestPrintContents(t *testing.T) {
 
 			var buf bytes.Buffer
 
-			fd := test.OpenTestNotesFile(t)
-			fcs.PrintContents(&buf, fd, strings.TrimLeft(tc.title, "# "))
+			file := test.OpenTestNotesFile(t)
+			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "# "))
+
 			assert.Equal(t, tc.contents, buf.String())
 		})
 	}
 }
 
-func TestPrintFirstURL(t *testing.T) {
+func TestWriteFirstURL(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
 
-	fd := test.OpenTestNotesFile(t)
-	fcs.PrintFirstURL(&buf, fd, "URL")
+	file := test.OpenTestNotesFile(t)
+	fcs.WriteFirstURL(&buf, file, "URL")
+
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
 }
 
-func TestPrintFirstCmdLine(t *testing.T) {
+func TestWriteFirstCmdLine(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
 
-	fd := test.OpenTestNotesFile(t)
-	fcs.PrintFirstCmdLine(&buf, fd, "command-line")
+	file := test.OpenTestNotesFile(t)
+	fcs.WriteFirstCmdLine(&buf, file, "command-line")
+
 	assert.Equal(t, "ls -l | nl\n", buf.String())
 }
 
@@ -118,13 +121,14 @@ func TestIsShellCodeBlockBegin(t *testing.T) {
 	}
 }
 
-func TestPrintLineNumber(t *testing.T) {
+func TestWriteNoteLocation(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
 
-	fd := test.OpenTestNotesFile(t)
-	fcs.PrintLineNumber(&buf, fd, "URL")
+	file := test.OpenTestNotesFile(t)
+	fcs.WriteNoteLocation(&buf, file, "URL")
+
 	assert.Equal(t, fmt.Sprintf("\"%s\" 61\n", test.TestNotesFile), buf.String())
 }
 
@@ -133,7 +137,8 @@ func TestGetFcsFile(t *testing.T) {
 		expectedFileName := "test_file_from_env.md"
 		t.Setenv("FCS_NOTES_FILE", expectedFileName)
 
-		fileName, err := fcs.GetNotesFile()
+		fileName, err := fcs.GetNotesFileName()
+
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileName, fileName)
 	})
@@ -144,7 +149,8 @@ func TestGetFcsFile(t *testing.T) {
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
-		filename, err := fcs.GetNotesFile()
+		filename, err := fcs.GetNotesFileName()
+
 		assert.NoError(t, err)
 		assert.Equal(t, filepath.Join(home, "fcnotes.md"), filename)
 	})

@@ -14,10 +14,11 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
-func PrintTitles(buf io.Writer, fd io.Reader) {
+// WriteTitles writes the titles of all notes.
+func WriteTitles(w io.Writer, r io.Reader) {
 	var allTitles []string
 
-	scanner := bufio.NewScanner(fd)
+	scanner := bufio.NewScanner(r)
 	isFenced := false
 
 	for scanner.Scan() {
@@ -30,7 +31,7 @@ func PrintTitles(buf io.Writer, fd io.Reader) {
 			}
 
 			if !slices.Contains(allTitles, title) {
-				fmt.Fprintln(buf, title)
+				fmt.Fprintln(w, title)
 				allTitles = append(allTitles, title)
 			}
 		}
@@ -41,17 +42,18 @@ func PrintTitles(buf io.Writer, fd io.Reader) {
 	}
 }
 
-func PrintContents(buf io.Writer, fd io.Reader, title string) {
+// WriteContents writes the contents of the note.
+func WriteContents(w io.Writer, r io.Reader, title string) {
 	isScope := false
 	isFenced := false
 	isBlank := false
-	r := getNoteTitleRegexp(title)
+	re := getNoteTitleRegexp(title)
 
-	scanner := bufio.NewScanner(fd)
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if r.MatchString(line) && !isFenced {
+		if re.MatchString(line) && !isFenced {
 			isScope = true
 		} else if isScope {
 			switch {
@@ -68,34 +70,36 @@ func PrintContents(buf io.Writer, fd io.Reader, title string) {
 			if isBlank {
 				isBlank = false
 
-				fmt.Fprintln(buf, "")
+				fmt.Fprintln(w, "")
 			}
 
-			fmt.Fprintln(buf, line)
+			fmt.Fprintln(w, line)
 		}
 	}
 }
 
-func PrintFirstURL(buf io.Writer, fd io.Reader, title string) {
-	var b bytes.Buffer
+// PrintsFirstURL writes the first URL in the contents of the note.
+func WriteFirstURL(w io.Writer, r io.Reader, title string) {
+	var buf bytes.Buffer
 
-	PrintContents(&b, fd, title)
+	WriteContents(&buf, r, title)
 
 	rxStrict := xurls.Strict()
-	url := rxStrict.FindString(b.String())
+	url := rxStrict.FindString(buf.String())
 
 	if url != "" {
-		fmt.Fprintln(buf, url)
+		fmt.Fprintln(w, url)
 	}
 }
 
-func PrintFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
-	var b bytes.Buffer
+// WriteFirstCmdLine writes the first command-line in the contents of the note.
+func WriteFirstCmdLine(w io.Writer, r io.Reader, title string) {
+	var buf bytes.Buffer
 
 	isFenced := false
 
-	PrintContents(&b, fd, title)
-	scanner := bufio.NewScanner(&b)
+	WriteContents(&buf, r, title)
+	scanner := bufio.NewScanner(&buf)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -109,13 +113,14 @@ func PrintFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
 		}
 
 		if isFenced {
-			fmt.Fprintln(buf, strings.TrimLeft(line, "$ "))
+			fmt.Fprintln(w, strings.TrimLeft(line, "$ "))
 		}
 	}
 }
 
 var reShellCodeBlock = regexp.MustCompile("^```\\s*(\\S+).*$")
 
+// IsShellCodeBlockBegin determines if the line is the beginning of a shell code block.
 func IsShellCodeBlockBegin(line string) bool {
 	shellList := []string{
 		"shell", "sh", "shell-script", "bash", "zsh",
@@ -131,9 +136,10 @@ func IsShellCodeBlockBegin(line string) bool {
 	return slices.Contains(shellList, match[1])
 }
 
-func PrintLineNumber(buf io.Writer, fd *os.File, title string) {
+// WriteNoteLocation writes the file name and line number of the note.
+func WriteNoteLocation(w io.Writer, file *os.File, title string) {
 	c := 0
-	scanner := bufio.NewScanner(fd)
+	scanner := bufio.NewScanner(file)
 	r := getNoteTitleRegexp(title)
 
 	for scanner.Scan() {
@@ -141,14 +147,15 @@ func PrintLineNumber(buf io.Writer, fd *os.File, title string) {
 		line := scanner.Text()
 
 		if r.MatchString(line) {
-			fmt.Fprintf(buf, "%q %d\n", fd.Name(), c)
+			fmt.Fprintf(w, "%q %d\n", file.Name(), c)
 
 			break
 		}
 	}
 }
 
-func GetNotesFile() (string, error) {
+// GetNotesFileName returns the filename of the notes.
+func GetNotesFileName() (string, error) {
 	fileName := os.Getenv("FCS_NOTES_FILE")
 	if fileName != "" {
 		return fileName, nil
@@ -164,6 +171,7 @@ func GetNotesFile() (string, error) {
 	return fileName, nil
 }
 
+// getNoteTitleRegexp returns a regular expression to search for the title of the note.
 func getNoteTitleRegexp(title string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("^#* %s$", regexp.QuoteMeta(title)))
 }

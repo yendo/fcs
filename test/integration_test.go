@@ -135,7 +135,7 @@ func TestUserHomeDirNotExists(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
+	assert.Equal(t, "cannot get notes file name: cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
 }
 
 func TestNotesNotExists(t *testing.T) {
