@@ -42,6 +42,11 @@ integration-test-v: test/$(BINARY)
 	@go tool covdata textfmt -i=$(GOCOVERDIR) -o cover-it.out
 	@go tool cover -html=cover-it.out -o cover-it.html
 
+.PHONY: super-linter
+super-linter: clean
+	docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -e VALIDATE_GO=false \
+		-v ${PWD}:/tmp/lint/ ghcr.io/super-linter/super-linter:slim-v5
+
 .PHONY: clean
 clean:
 	rm -rf $(BINARY) test/$(BINARY) dist cover*

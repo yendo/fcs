@@ -63,12 +63,12 @@ The contents are ignored.
 fcs: http://github.com/yendo/fcs/
 github: http://github.com/
 
-# command line
+# command-line
 
 ```sh
 ls -l | nl
 ```
-# command line with $
+# command-line with $
 
 ```sh
 $ date
