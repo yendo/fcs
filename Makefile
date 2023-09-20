@@ -1,14 +1,14 @@
 VERSION := $(shell git describe --tags --abbrev=0 | awk -F "." '{sub("v","", $$1); printf "%s.%s.%s\n",$$1,$$2,$$3+1}')
 
 BINARY=fcs-cli
-GO_FILES=main.go go.mod go.sum
+GO_FILES=cmd/fcs-cli/main.go fcs.go go.mod go.sum
 GOCOVERDIR=coverdir
 
 $(BINARY): $(GO_FILES)
-	go build -o $@ -trimpath -ldflags "-s -w -X main.version=${VERSION}-snapshot"
+	go build -trimpath -ldflags "-s -w -X main.version=${VERSION}-snapshot" ./cmd/fcs-cli/
 
 test/$(BINARY): $(GO_FILES)
-	go build -o $@ -cover -trimpath -ldflags "-s -w -X main.version=0.0.0-test"
+	go build -o $@ -cover -trimpath -ldflags "-s -w -X main.version=0.0.0-test" ./cmd/fcs-cli/
 
 .PHONY: test
 test: unit-test integration-test

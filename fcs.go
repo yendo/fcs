@@ -1,10 +1,8 @@
-package main
+package fcs
 
 import (
 	"bufio"
 	"bytes"
-	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -16,18 +14,7 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
-var (
-	version = "unknown"
-
-	showVersion = flag.Bool("v", false, "output the version")
-	showURL     = flag.Bool("u", false, "output the first URL from the note")
-	showCmd     = flag.Bool("c", false, "output the first command from the note")
-	showLoc     = flag.Bool("l", false, "output the note location")
-
-	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
-)
-
-func printTitles(buf io.Writer, fd io.Reader) {
+func PrintTitles(buf io.Writer, fd io.Reader) {
 	var allTitles []string
 
 	scanner := bufio.NewScanner(fd)
@@ -54,7 +41,7 @@ func printTitles(buf io.Writer, fd io.Reader) {
 	}
 }
 
-func printContents(buf io.Writer, fd io.Reader, title string) {
+func PrintContents(buf io.Writer, fd io.Reader, title string) {
 	isScope := false
 	isFenced := false
 	isBlank := false
@@ -89,10 +76,10 @@ func printContents(buf io.Writer, fd io.Reader, title string) {
 	}
 }
 
-func printFirstURL(buf io.Writer, fd io.Reader, title string) {
+func PrintFirstURL(buf io.Writer, fd io.Reader, title string) {
 	var b bytes.Buffer
 
-	printContents(&b, fd, title)
+	PrintContents(&b, fd, title)
 
 	rxStrict := xurls.Strict()
 	url := rxStrict.FindString(b.String())
@@ -102,18 +89,18 @@ func printFirstURL(buf io.Writer, fd io.Reader, title string) {
 	}
 }
 
-func printFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
+func PrintFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
 	var b bytes.Buffer
 
 	isFenced := false
 
-	printContents(&b, fd, title)
+	PrintContents(&b, fd, title)
 	scanner := bufio.NewScanner(&b)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if isShellCodeBlockBegin(line) {
+		if IsShellCodeBlockBegin(line) {
 			isFenced = true
 
 			continue
@@ -129,7 +116,7 @@ func printFirstCmdLine(buf io.Writer, fd io.Reader, title string) {
 
 var reShellCodeBlock = regexp.MustCompile("^```\\s*(\\S+).*$")
 
-func isShellCodeBlockBegin(line string) bool {
+func IsShellCodeBlockBegin(line string) bool {
 	shellList := []string{
 		"shell", "sh", "shell-script", "bash", "zsh",
 		"powershell", "posh", "pwsh",
@@ -144,7 +131,7 @@ func isShellCodeBlockBegin(line string) bool {
 	return slices.Contains(shellList, match[1])
 }
 
-func printLineNumber(buf io.Writer, fd *os.File, title string) {
+func PrintLineNumber(buf io.Writer, fd *os.File, title string) {
 	c := 0
 	scanner := bufio.NewScanner(fd)
 	r := getNoteTitleRegexp(title)
@@ -161,7 +148,7 @@ func printLineNumber(buf io.Writer, fd *os.File, title string) {
 	}
 }
 
-func getNotesFile() (string, error) {
+func GetNotesFile() (string, error) {
 	fileName := os.Getenv("FCS_NOTES_FILE")
 	if fileName != "" {
 		return fileName, nil
@@ -179,66 +166,4 @@ func getNotesFile() (string, error) {
 
 func getNoteTitleRegexp(title string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("^#* %s$", regexp.QuoteMeta(title)))
-}
-
-func run(buf io.Writer) error {
-	flag.Parse()
-	args := flag.Args()
-
-	if *showVersion {
-		fmt.Fprintln(buf, version)
-
-		return nil
-	}
-
-	fileName, err := getNotesFile()
-	if err != nil {
-		return err
-	}
-
-	fd, err := os.Open(fileName)
-	if err != nil {
-		return fmt.Errorf("cannot access notes file: %w", err)
-	}
-	defer fd.Close()
-
-	if *showURL || *showCmd || *showLoc {
-		if len(args) != 1 {
-			return ErrInvalidNumberOfArgs
-		}
-
-		switch {
-		case *showURL:
-			printFirstURL(buf, fd, args[0])
-		case *showCmd:
-			printFirstCmdLine(buf, fd, args[0])
-		case *showLoc:
-			printLineNumber(buf, fd, args[0])
-		}
-
-		return nil
-	}
-
-	switch len(args) {
-	case 0:
-		printTitles(buf, fd)
-	case 1:
-		printContents(buf, fd, args[0])
-	default:
-		return ErrInvalidNumberOfArgs
-	}
-
-	return nil
-}
-
-func main() {
-	exitCode := 0
-
-	if err := run(os.Stdout); err != nil {
-		exitCode = 1
-
-		fmt.Fprintln(os.Stderr, err)
-	}
-
-	os.Exit(exitCode)
 }

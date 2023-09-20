@@ -1,6 +1,28 @@
 package test
 
-import "strings"
+import (
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+const TestNotesFile = "test/test_fcnotes.md"
+
+func OpenTestNotesFile(t *testing.T) *os.File {
+	t.Helper()
+
+	fd, err := os.Open(TestNotesFile)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err := fd.Close()
+		require.NoError(t, err)
+	})
+
+	return fd
+}
 
 func GetExpectedTitles() string {
 	titles := `title
