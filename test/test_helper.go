@@ -37,6 +37,7 @@ title has trailing spaces
 no contents
 no contents2
 no_space_title
+spaces before title
 fenced code block
 URL
 command-line

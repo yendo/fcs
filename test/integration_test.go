@@ -80,7 +80,7 @@ func TestCmd(t *testing.T) {
 			title:   "with line flag and an arg",
 			options: []string{"-l", "URL"},
 			err:     false,
-			stdout:  "\"test_fcnotes.md\" 61\n",
+			stdout:  "\"test_fcnotes.md\" 65\n",
 			stderr:  "",
 		},
 		{

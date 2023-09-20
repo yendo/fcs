@@ -173,5 +173,5 @@ func GetNotesFileName() (string, error) {
 
 // getNoteTitleRegexp returns a regular expression to search for the title of the note.
 func getNoteTitleRegexp(title string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^#* %s$", regexp.QuoteMeta(title)))
+	return regexp.MustCompile(fmt.Sprintf("^#*\\s+%s$", regexp.QuoteMeta(title)))
 }

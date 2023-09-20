@@ -42,6 +42,7 @@ func TestWriteContents(t *testing.T) {
 		{"#", ""},
 		{"# no contents", "# no contents\n"},
 		{"#no_space_title", ""},
+		{"#   spaces before title", "#   spaces before title\n\n" + "line\n"},
 		{"# fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
 		{"# URL", "# URL\n\n" + "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
 		{"# command-line", "# command-line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
@@ -129,7 +130,7 @@ func TestWriteNoteLocation(t *testing.T) {
 	file := test.OpenTestNotesFile(t)
 	fcs.WriteNoteLocation(&buf, file, "URL")
 
-	assert.Equal(t, fmt.Sprintf("\"%s\" 61\n", test.TestNotesFile), buf.String())
+	assert.Equal(t, fmt.Sprintf("\"%s\" 65\n", test.TestNotesFile), buf.String())
 }
 
 func TestGetFcsFile(t *testing.T) {
