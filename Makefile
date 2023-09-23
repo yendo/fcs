@@ -44,7 +44,8 @@ integration-test-v: test/$(BINARY)
 
 .PHONY: super-linter
 super-linter: clean
-	docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -e VALIDATE_GO=false \
+	docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true \
+		-e FILTER_REGEX_EXCLUDE=".*/testdata/.*" -e VALIDATE_GO=false \
 		-v ${PWD}:/tmp/lint/ ghcr.io/super-linter/super-linter:slim-v5
 
 .PHONY: clean

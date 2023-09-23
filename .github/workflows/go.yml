@@ -36,5 +36,5 @@ jobs:
 
       - name: Integration Test
         run: |
-          cp test/test_fcnotes.md "${HOME}/fcnotes.md"
+          cp test/testdata/test_fcnotes.md "${HOME}/fcnotes.md"
           make integration-test-v

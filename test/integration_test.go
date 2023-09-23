@@ -80,7 +80,7 @@ func TestCmd(t *testing.T) {
 			title:   "with line flag and an arg",
 			options: []string{"-l", "URL"},
 			err:     false,
-			stdout:  "\"test_fcnotes.md\" 65\n",
+			stdout:  "\"testdata/test_fcnotes.md\" 65\n",
 			stderr:  "",
 		},
 		{
@@ -109,7 +109,7 @@ func TestCmd(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 
-		t.Setenv("FCS_NOTES_FILE", "test_fcnotes.md")
+		t.Setenv("FCS_NOTES_FILE", "testdata/test_fcnotes.md")
 
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()

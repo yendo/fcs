@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const TestNotesFile = "test_fcnotes.md"
+const TestNotesFile = "testdata/test_fcnotes.md"
 
 // OpenTestNotesFile opens a test notes file.
 func OpenTestNotesFile(t *testing.T) *os.File {
