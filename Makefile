@@ -18,12 +18,12 @@ test-v: unit-test-v integration-test-v
 
 .PHONY: unit-test
 unit-test:
-	go test -cover -coverprofile cover-ut.out
+	go test -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
 	@go tool cover -html=cover-ut.out -o cover-ut.html
 
 .PHONY: unit-test-v
 unit-test-v:
-	go test -v -cover -coverprofile cover-ut.out
+	go test -v -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
 	@go tool cover -html=cover-ut.out -o cover-ut.html
 
 .PHONY: integration-test

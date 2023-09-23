@@ -130,10 +130,21 @@ func TestWriteNoteLocation(t *testing.T) {
 	file := test.OpenTestNotesFile(t)
 	fcs.WriteNoteLocation(&buf, file, "URL")
 
-	assert.Equal(t, fmt.Sprintf("\"%s\" 65\n", test.TestNotesFile), buf.String())
+	testFile := test.GetTestDataFullPath(test.TestNotesFile)
+	assert.Equal(t, fmt.Sprintf("\"%s\" 65\n", testFile), buf.String())
 }
 
 func TestGetFcsFile(t *testing.T) {
+	t.Run("cannot access user home directory", func(t *testing.T) {
+		t.Setenv("HOME", "")
+
+		fileName, err := fcs.GetNotesFileName()
+
+		assert.Empty(t, fileName)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "cannot access user home directory: $HOME is not defined")
+	})
+
 	t.Run("set from environment variable", func(t *testing.T) {
 		expectedFileName := "test_file_from_env.md"
 		t.Setenv("FCS_NOTES_FILE", expectedFileName)

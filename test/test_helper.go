@@ -2,19 +2,22 @@ package test
 
 import (
 	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-const TestNotesFile = "test/test_fcnotes.md"
+const TestNotesFile = "test_fcnotes.md"
 
 // OpenTestNotesFile opens a test notes file.
 func OpenTestNotesFile(t *testing.T) *os.File {
 	t.Helper()
 
-	file, err := os.Open(TestNotesFile)
+	file, err := os.Open(GetTestDataFullPath(TestNotesFile))
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
@@ -23,6 +26,11 @@ func OpenTestNotesFile(t *testing.T) *os.File {
 	})
 
 	return file
+}
+
+func GetTestDataFullPath(filename string) string {
+	_, thisFileName, _, _ := runtime.Caller(0)
+	return filepath.Join(path.Dir(thisFileName), filename)
 }
 
 // GetExpectedTitles returns the titles of the test notes.
