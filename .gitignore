@@ -1,3 +1,4 @@
-fcs-cli
-cover*
-dist/
+/fcs-cli
+test/fcs-cli
+/cover*
+/dist/

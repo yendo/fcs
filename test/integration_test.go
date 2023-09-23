@@ -80,7 +80,7 @@ func TestCmd(t *testing.T) {
 			title:   "with line flag and an arg",
 			options: []string{"-l", "URL"},
 			err:     false,
-			stdout:  "\"test_fcnotes.md\" 61\n",
+			stdout:  "\"test_fcnotes.md\" 65\n",
 			stderr:  "",
 		},
 		{
@@ -135,7 +135,7 @@ func TestUserHomeDirNotExists(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
+	assert.Equal(t, "cannot get notes file name: cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
 }
 
 func TestNotesNotExists(t *testing.T) {

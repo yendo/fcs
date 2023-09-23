@@ -52,6 +52,10 @@ no title
 
 The contents are ignored.
 
+#   spaces before title
+
+line
+
 # fenced code block
 
 ```
