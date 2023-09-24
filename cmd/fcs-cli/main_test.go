@@ -136,6 +136,8 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with location flag", func(t *testing.T) {
+		testFileName := test.GetTestDataFullPath(test.TestLocationFile)
+		t.Setenv("FCS_NOTES_FILE", testFileName)
 		setCommandLineFlag(t, "l")
 
 		t.Run("with no args", func(t *testing.T) {
@@ -151,14 +153,14 @@ func TestRun(t *testing.T) {
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
-			os.Args = []string{"fcs-cli", "-l", "command-line"}
+			os.Args = []string{"fcs-cli", "-l", "5th Line"}
 
 			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
 			assert.Equal(t, true, *showLoc)
-			assert.Equal(t, fmt.Sprintf("%q 70\n", test.GetTestDataFullPath(test.TestNotesFile)), buf.String())
+			assert.Equal(t, fmt.Sprintf("%q 5\n", testFileName), buf.String())
 		})
 	})
 

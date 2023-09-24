@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -77,13 +78,6 @@ func TestCmd(t *testing.T) {
 			stderr:  "invalid number of arguments\n",
 		},
 		{
-			title:   "with line flag and an arg",
-			options: []string{"-l", "URL"},
-			err:     false,
-			stdout:  "\"testdata/test_fcnotes.md\" 65\n",
-			stderr:  "",
-		},
-		{
 			title:   "without args",
 			options: []string{},
 			err:     false,
@@ -109,7 +103,7 @@ func TestCmd(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 
-		t.Setenv("FCS_NOTES_FILE", "testdata/test_fcnotes.md")
+		t.Setenv("FCS_NOTES_FILE", TestNotesFile)
 
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
@@ -123,6 +117,19 @@ func TestCmd(t *testing.T) {
 			assert.Equal(t, tc.stderr, buf.stderr.String())
 		})
 	}
+}
+
+func TestCmdNotesLocation(t *testing.T) {
+	t.Setenv("FCS_NOTES_FILE", TestLocationFile)
+
+	buf := &stdBuf{}
+	cmd := buf.newTestCmd("-l", "5th Line")
+	err := cmd.Run()
+
+	assert.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf("%q 5\n", TestLocationFile), buf.stdout.String())
+	assert.Empty(t, buf.stderr.String())
+
 }
 
 func TestUserHomeDirNotExists(t *testing.T) {

@@ -108,7 +108,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
-			file := test.OpenTestNotesFile(t, "testdata/test_shellblock.md")
+			file := test.OpenTestNotesFile(t, test.TestShellBlockFile)
 
 			fcs.WriteFirstCmdLine(&buf, file, tc.title)
 
@@ -123,15 +123,15 @@ func TestWriteNoteLocation(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	file := test.OpenTestNotesFile(t, test.TestNotesFile)
-	fcs.WriteNoteLocation(&buf, file, "URL")
+	testFile := test.OpenTestNotesFile(t, test.TestLocationFile)
+	fcs.WriteNoteLocation(&buf, testFile, "5th Line")
 
-	testFile := test.GetTestDataFullPath(test.TestNotesFile)
-	assert.Equal(t, fmt.Sprintf("\"%s\" 65\n", testFile), buf.String())
+	assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 }
 
 func TestGetFcsFile(t *testing.T) {
 	t.Run("cannot access user home directory", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 
 		fileName, err := fcs.GetNotesFileName()
