@@ -159,6 +159,6 @@ func TestGetFcsFile(t *testing.T) {
 		filename, err := fcs.GetNotesFileName()
 
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, "fcnotes.md"), filename)
+		assert.Equal(t, filepath.Join(home, fcs.DefaultNotesFile), filename)
 	})
 }

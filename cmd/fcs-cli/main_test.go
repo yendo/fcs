@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/yendo/fcs"
 	"github.com/yendo/fcs/test"
 )
 
@@ -53,7 +54,7 @@ func TestRun(t *testing.T) {
 		err := run(&buf)
 
 		assert.Error(t, err)
-		assert.EqualError(t, err, "cannot access notes file: open no_exits/fcnotes.md: no such file or directory")
+		assert.EqualError(t, err, fmt.Sprintf("cannot access notes file: open no_exits/%s: no such file or directory", fcs.DefaultNotesFile))
 		assert.Empty(t, buf.String())
 	})
 

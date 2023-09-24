@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const defaultNotesFile = "fcnotes.md"
+
 type stdBuf struct {
 	stdout bytes.Buffer
 	stderr bytes.Buffer
@@ -177,8 +179,8 @@ func TestDefaultNoteExists(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	if _, err := os.Stat(filepath.Join(home, "fcnotes.md")); err != nil {
-		t.Skip("the default fcnotes.md does not exist")
+	if _, err := os.Stat(filepath.Join(home, defaultNotesFile)); err != nil {
+		t.Skipf("the default %s does not exist", defaultNotesFile)
 	}
 
 	buf := &stdBuf{}

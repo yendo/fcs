@@ -14,6 +14,8 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
+const DefaultNotesFile = "fcnotes.md"
+
 // WriteTitles writes the titles of all notes.
 func WriteTitles(w io.Writer, r io.Reader) {
 	var allTitles []string
@@ -166,7 +168,7 @@ func GetNotesFileName() (string, error) {
 		return "", fmt.Errorf("cannot access user home directory: %w", err)
 	}
 
-	fileName = filepath.Join(home, "fcnotes.md")
+	fileName = filepath.Join(home, DefaultNotesFile)
 
 	return fileName, nil
 }
