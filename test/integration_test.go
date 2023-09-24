@@ -53,7 +53,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "with location flag and an arg",
 			options: []string{"-l", "title"},
-			stdout:  "\"testdata/test_fcnotes.md\" 1\n",
+			stdout:  fmt.Sprintf("%q 1\n", TestNotesFile),
 		},
 		{
 			title:   "without args",
@@ -75,6 +75,7 @@ func TestCmdSuccess(t *testing.T) {
 
 			buf := &stdBuf{}
 			cmd := buf.newTestCmd(tc.options...)
+
 			err := cmd.Run()
 
 			assert.NoError(t, err)
@@ -122,6 +123,7 @@ func TestCmdFail(t *testing.T) {
 
 			buf := &stdBuf{}
 			cmd := buf.newTestCmd(tc.options...)
+
 			err := cmd.Run()
 
 			assert.Error(t, err)
@@ -133,9 +135,9 @@ func TestCmdFail(t *testing.T) {
 
 func TestCmdNotesLocation(t *testing.T) {
 	t.Setenv("FCS_NOTES_FILE", TestLocationFile)
-
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd("-l", "5th Line")
+
 	err := cmd.Run()
 
 	assert.NoError(t, err)
@@ -146,9 +148,9 @@ func TestCmdNotesLocation(t *testing.T) {
 func TestUserHomeDirNotExists(t *testing.T) {
 	t.Setenv("FCS_NOTES_FILE", "")
 	t.Setenv("HOME", "")
-
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd()
+
 	err := cmd.Run()
 
 	assert.Error(t, err)
@@ -158,9 +160,9 @@ func TestUserHomeDirNotExists(t *testing.T) {
 
 func TestNotesNotExists(t *testing.T) {
 	t.Setenv("FCS_NOTES_FILE", "not_exists")
-
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd()
+
 	err := cmd.Run()
 
 	assert.Error(t, err)
@@ -169,6 +171,7 @@ func TestNotesNotExists(t *testing.T) {
 }
 
 func TestDefaultNoteExists(t *testing.T) {
+	// Arrange
 	t.Setenv("FCS_NOTES_FILE", "")
 
 	home, err := os.UserHomeDir()
@@ -180,8 +183,11 @@ func TestDefaultNoteExists(t *testing.T) {
 
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd()
+
+	// Act
 	err = cmd.Run()
 
+	// Assert
 	assert.NoError(t, err)
 	assert.Empty(t, buf.stderr.String())
 }

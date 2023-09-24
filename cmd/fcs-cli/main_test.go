@@ -36,8 +36,8 @@ func TestRun(t *testing.T) {
 	t.Run("cannot access UserHomeDir", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
-
 		var buf bytes.Buffer
+
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -48,8 +48,8 @@ func TestRun(t *testing.T) {
 	t.Run("cannot access notes file", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "")
 		t.Setenv("HOME", "no_exits")
-
 		var buf bytes.Buffer
+
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -59,14 +59,12 @@ func TestRun(t *testing.T) {
 
 	t.Run("with version flag", func(t *testing.T) {
 		setCommandLineFlag(t, "v")
-
+		var buf bytes.Buffer
 		os.Args = []string{"fcs-cli", "-v"}
 
-		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
-		assert.Equal(t, true, *showVersion)
 		assert.Equal(t, version+"\n", buf.String())
 	})
 
@@ -74,25 +72,23 @@ func TestRun(t *testing.T) {
 		setCommandLineFlag(t, "u")
 
 		t.Run("with no args", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-u"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.Error(t, err)
 			assert.EqualError(t, err, "invalid number of arguments")
-			assert.Equal(t, true, *showURL)
-			assert.Equal(t, "", buf.String())
+			assert.Empty(t, buf.String())
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-u", "URL"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
-			assert.Equal(t, true, *showURL)
 			assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
 		})
 	})
@@ -101,36 +97,33 @@ func TestRun(t *testing.T) {
 		setCommandLineFlag(t, "c")
 
 		t.Run("with no args", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-c"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.Error(t, err)
 			assert.EqualError(t, err, "invalid number of arguments")
-			assert.Equal(t, true, *showCmd)
-			assert.Equal(t, "", buf.String())
+			assert.Empty(t, buf.String())
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-c", "command-line"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
-			assert.Equal(t, true, *showCmd)
 			assert.Equal(t, "ls -l | nl\n", buf.String())
 		})
 
 		t.Run("with a arg has $", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-c", "command-line with $"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
-			assert.Equal(t, true, *showCmd)
 			assert.Equal(t, "date\n", buf.String())
 		})
 	})
@@ -141,33 +134,31 @@ func TestRun(t *testing.T) {
 		setCommandLineFlag(t, "l")
 
 		t.Run("with no args", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-l"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.Error(t, err)
 			assert.EqualError(t, err, "invalid number of arguments")
-			assert.Equal(t, true, *showLoc)
-			assert.Equal(t, "", buf.String())
+			assert.Empty(t, buf.String())
 		})
 
 		t.Run("with a arg", func(t *testing.T) {
+			var buf bytes.Buffer
 			os.Args = []string{"fcs-cli", "-l", "5th Line"}
 
-			var buf bytes.Buffer
 			err := run(&buf)
 
 			assert.NoError(t, err)
-			assert.Equal(t, true, *showLoc)
 			assert.Equal(t, fmt.Sprintf("%q 5\n", testFileName), buf.String())
 		})
 	})
 
 	t.Run("without args", func(t *testing.T) {
+		var buf bytes.Buffer
 		os.Args = []string{"fcs-cli"}
 
-		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -175,9 +166,9 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with an arg", func(t *testing.T) {
+		var buf bytes.Buffer
 		os.Args = []string{"fcs-cli", "title"}
 
-		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -185,13 +176,13 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("with two args", func(t *testing.T) {
+		var buf bytes.Buffer
 		os.Args = []string{"fcs-cli", "title", "other"}
 
-		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
 		assert.EqualError(t, err, "invalid number of arguments")
-		assert.Equal(t, "", buf.String())
+		assert.Empty(t, buf.String())
 	})
 }

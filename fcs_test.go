@@ -56,8 +56,8 @@ func TestWriteContents(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
-
 			file := test.OpenTestNotesFile(t, test.TestNotesFile)
+
 			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "# "))
 
 			assert.Equal(t, tc.contents, buf.String())
@@ -69,8 +69,8 @@ func TestWriteFirstURL(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
-
 	file := test.OpenTestNotesFile(t, test.TestNotesFile)
+
 	fcs.WriteFirstURL(&buf, file, "URL")
 
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
@@ -153,7 +153,6 @@ func TestGetFcsFile(t *testing.T) {
 
 	t.Run("default filename", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "")
-
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
