@@ -27,83 +27,48 @@ func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func TestCmd(t *testing.T) {
+func TestCmdSuccess(t *testing.T) {
+	t.Setenv("FCS_NOTES_FILE", TestNotesFile)
+
 	tests := []struct {
 		title   string
 		options []string
-		err     bool
 		stdout  string
-		stderr  string
 	}{
 		{
 			title:   "with version flag",
 			options: []string{"-v"},
-			err:     false,
 			stdout:  "0.0.0-test\n",
-			stderr:  "",
-		},
-		{
-			title:   "with url flag and no arg",
-			options: []string{"-u"},
-			err:     true,
-			stdout:  "",
-			stderr:  "invalid number of arguments\n",
 		},
 		{
 			title:   "with url flag and an arg",
 			options: []string{"-u", "URL"},
-			err:     false,
 			stdout:  "http://github.com/yendo/fcs/\n",
-			stderr:  "",
-		},
-		{
-			title:   "with cmd flag and no arg",
-			options: []string{"-c"},
-			err:     true,
-			stdout:  "",
-			stderr:  "invalid number of arguments\n",
 		},
 		{
 			title:   "with cmd flag and an arg",
 			options: []string{"-c", "command-line"},
-			err:     false,
 			stdout:  "ls -l | nl\n",
-			stderr:  "",
 		},
 		{
-			title:   "with line flag and no arg",
-			options: []string{"-l"},
-			err:     true,
-			stdout:  "",
-			stderr:  "invalid number of arguments\n",
+			title:   "with location flag and an arg",
+			options: []string{"-l", "title"},
+			stdout:  "\"testdata/test_fcnotes.md\" 1\n",
 		},
 		{
 			title:   "without args",
 			options: []string{},
-			err:     false,
 			stdout:  GetExpectedTitles(),
-			stderr:  "",
 		},
 		{
 			title:   "with an arg",
 			options: []string{"title"},
-			err:     false,
 			stdout:  "# title\n\ncontents\n",
-			stderr:  "",
-		},
-		{
-			title:   "with two args",
-			options: []string{"title", "other"},
-			err:     true,
-			stdout:  "",
-			stderr:  "invalid number of arguments\n",
 		},
 	}
 
 	for _, tc := range tests {
 		tc := tc
-
-		t.Setenv("FCS_NOTES_FILE", TestNotesFile)
 
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
@@ -112,8 +77,55 @@ func TestCmd(t *testing.T) {
 			cmd := buf.newTestCmd(tc.options...)
 			err := cmd.Run()
 
-			assert.Equal(t, tc.err, err != nil)
+			assert.NoError(t, err)
 			assert.Equal(t, tc.stdout, buf.stdout.String())
+			assert.Empty(t, buf.stderr.String())
+		})
+	}
+}
+
+func TestCmdFail(t *testing.T) {
+	t.Setenv("FCS_NOTES_FILE", TestNotesFile)
+
+	tests := []struct {
+		title   string
+		options []string
+		stderr  string
+	}{
+		{
+			title:   "with url flag and no arg",
+			options: []string{"-u"},
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with cmd flag and no arg",
+			options: []string{"-c"},
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with location flag and no arg",
+			options: []string{"-l"},
+			stderr:  "invalid number of arguments\n",
+		},
+		{
+			title:   "with two args",
+			options: []string{"title", "other"},
+			stderr:  "invalid number of arguments\n",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
+
+			buf := &stdBuf{}
+			cmd := buf.newTestCmd(tc.options...)
+			err := cmd.Run()
+
+			assert.Error(t, err)
+			assert.Empty(t, buf.stdout.String())
 			assert.Equal(t, tc.stderr, buf.stderr.String())
 		})
 	}
@@ -129,7 +141,6 @@ func TestCmdNotesLocation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, fmt.Sprintf("%q 5\n", TestLocationFile), buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
-
 }
 
 func TestUserHomeDirNotExists(t *testing.T) {
