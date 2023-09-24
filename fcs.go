@@ -104,7 +104,7 @@ func WriteFirstCmdLine(w io.Writer, r io.Reader, title string) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if IsShellCodeBlockBegin(line) {
+		if isShellCodeBlockBegin(line) {
 			isFenced = true
 
 			continue
@@ -118,10 +118,10 @@ func WriteFirstCmdLine(w io.Writer, r io.Reader, title string) {
 	}
 }
 
-var reShellCodeBlock = regexp.MustCompile("^```\\s*(\\S+).*$")
+var reShellCodeBlock = regexp.MustCompile("^```+\\s*(\\S+).*$")
 
-// IsShellCodeBlockBegin determines if the line is the beginning of a shell code block.
-func IsShellCodeBlockBegin(line string) bool {
+// isShellCodeBlockBegin determines if the line is the beginning of a shell code block.
+func isShellCodeBlockBegin(line string) bool {
 	shellList := []string{
 		"shell", "sh", "shell-script", "bash", "zsh",
 		"powershell", "posh", "pwsh",

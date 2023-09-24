@@ -14,10 +14,10 @@ import (
 const TestNotesFile = "testdata/test_fcnotes.md"
 
 // OpenTestNotesFile opens a test notes file.
-func OpenTestNotesFile(t *testing.T) *os.File {
+func OpenTestNotesFile(t *testing.T, filename string) *os.File {
 	t.Helper()
 
-	file, err := os.Open(GetTestDataFullPath(TestNotesFile))
+	file, err := os.Open(GetTestDataFullPath(filename))
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
@@ -30,6 +30,7 @@ func OpenTestNotesFile(t *testing.T) *os.File {
 
 func GetTestDataFullPath(filename string) string {
 	_, thisFileName, _, _ := runtime.Caller(0)
+
 	return filepath.Join(path.Dir(thisFileName), filename)
 }
 

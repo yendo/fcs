@@ -19,7 +19,7 @@ func TestWriteTitles(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	file := test.OpenTestNotesFile(t)
+	file := test.OpenTestNotesFile(t, test.TestNotesFile)
 	fcs.WriteTitles(&buf, file)
 
 	assert.Equal(t, test.GetExpectedTitles(), buf.String())
@@ -57,7 +57,7 @@ func TestWriteContents(t *testing.T) {
 
 			var buf bytes.Buffer
 
-			file := test.OpenTestNotesFile(t)
+			file := test.OpenTestNotesFile(t, test.TestNotesFile)
 			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "# "))
 
 			assert.Equal(t, tc.contents, buf.String())
@@ -70,7 +70,7 @@ func TestWriteFirstURL(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	file := test.OpenTestNotesFile(t)
+	file := test.OpenTestNotesFile(t, test.TestNotesFile)
 	fcs.WriteFirstURL(&buf, file, "URL")
 
 	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
@@ -79,45 +79,41 @@ func TestWriteFirstURL(t *testing.T) {
 func TestWriteFirstCmdLine(t *testing.T) {
 	t.Parallel()
 
-	var buf bytes.Buffer
-
-	file := test.OpenTestNotesFile(t)
-	fcs.WriteFirstCmdLine(&buf, file, "command-line")
-
-	assert.Equal(t, "ls -l | nl\n", buf.String())
-}
-
-func TestIsShellCodeBlockBegin(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
-		fence  string
-		result bool
+		title  string
+		output bool
 	}{
-		{fence: "```shell", result: true},
-		{fence: "``` shell", result: true},
-		{fence: "````shell", result: false},
-		{fence: "```sh", result: true},
-		{fence: "```shell-script", result: true},
-		{fence: "```bash", result: true},
-		{fence: "```zsh", result: true},
-		{fence: "```powershell", result: true},
-		{fence: "```posh", result: true},
-		{fence: "```pwsh", result: true},
-		{fence: "```shellsession", result: true},
-		{fence: "```bash session", result: true},
-		{fence: "```console", result: true},
-		{fence: "```", result: false},
-		{fence: "```go", result: false},
-		{fence: "```sharp", result: false},
+		{"shell 1", true},
+		{"shell 2", true},
+		{"shell 3", true},
+		{"sh", true},
+		{"shell-script", true},
+		{"bash", true},
+		{"zsh", true},
+		{"powershell", true},
+		{"posh", true},
+		{"pwsh", true},
+		{"shellsession", true},
+		{"bash session", true},
+		{"console", true},
+		{"go", false},
+		{"no identifier", false},
+		{"other identifier", false},
 	}
 
 	for _, tc := range tests {
 		tc := tc
 
-		t.Run(tc.fence, func(t *testing.T) {
+		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tc.result, fcs.IsShellCodeBlockBegin(tc.fence))
+
+			var buf bytes.Buffer
+			file := test.OpenTestNotesFile(t, "testdata/test_shellblock.md")
+
+			fcs.WriteFirstCmdLine(&buf, file, tc.title)
+
+			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
+			assert.Equal(t, expected[tc.output], buf.String())
 		})
 	}
 }
@@ -127,7 +123,7 @@ func TestWriteNoteLocation(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	file := test.OpenTestNotesFile(t)
+	file := test.OpenTestNotesFile(t, test.TestNotesFile)
 	fcs.WriteNoteLocation(&buf, file, "URL")
 
 	testFile := test.GetTestDataFullPath(test.TestNotesFile)
