@@ -32,21 +32,20 @@ func TestWriteContents(t *testing.T) {
 		title    string
 		contents string
 	}{
-		{"# title", "# title\n\n" + "contents\n"},
-		{"# long title one", "# long title one\n\n" + "line one\nline two\n"},
-		{"# title has regular expression meta chars $", "# title has regular expression meta chars $\n\n" + "line\n"},
-		{"# contents have blank lines", "# contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
-		{"# same title", "# same title\n\n1st\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
-		{"## other heading level", "## other heading level\n\n" + "contents\n"},
-		{"# title has trailing spaces  ", "# title has trailing spaces  \n\n" + "The contents have trailing spaces.  \n"},
-		{"#", ""},
-		{"# no contents", "# no contents\n"},
-		{"#no_space_title", ""},
-		{"#   spaces before title", "#   spaces before title\n\n" + "line\n"},
-		{"# fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
-		{"# URL", "# URL\n\n" + "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
-		{"# command-line", "# command-line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
-		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
+		{"# title\n", "contents\n"},
+		{"# Long title and contents have lines\n", "line 1\n\nline 2\n"},
+		{"# Regular expression meta chars in the title are ignored $\n", "contents\n"},
+		{"# Consecutive blank lines are combined into a single line\n", "line 1\n\nline 2\n"},
+		{"# same title\n", "Contents with the same title are combined into one.\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
+		{"## Heading levels and structures are ignored\n", "contents\n"},
+		{"# Trailing spaces in the title are ignored  \n", "The contents have trailing spaces.  \n"},
+		{"# Notes without content output the title only", ""},
+		{"#   Spaces before the title are ignored\n", "contents\n"},
+		{"# Headings in fenced code blocks are ignored\n", "```\n" + "# fenced heading\n" + "```\n"},
+		{"# There can be no blank line", "contents\n"},
+		{"# URL\n", "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
+		{"# command-line\n", "```sh\n" + "ls -l | nl\n" + "```\n"},
+		{"# command-line with $\n", "```console\n" + "$ date\n" + "```\n"},
 	}
 
 	for _, tc := range tests {
@@ -54,13 +53,45 @@ func TestWriteContents(t *testing.T) {
 
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
+			file := test.OpenTestNotesFile(t, test.TestNotesFile)
+			var buf bytes.Buffer
+			title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+
+			fcs.WriteContents(&buf, file, title)
+
+			assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
+		})
+	}
+}
+
+func TestWriteNoContents(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		desc  string
+		title string
+	}{
+		{
+			desc:  "Titles without strings are not recognized.",
+			title: "#",
+		},
+		{
+			desc:  "Titles without a space after the `#` are not recognized",
+			title: "#no_space_title",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
 
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "# "))
+			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
 
-			assert.Equal(t, tc.contents, buf.String())
+			assert.Empty(t, buf.String())
 		})
 	}
 }

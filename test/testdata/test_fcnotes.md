@@ -2,37 +2,38 @@
 
 contents
 
-# long title one
+# Long title and contents have lines
 
-line one
-line two
+line 1
 
-# title has regular expression meta chars $
+line 2
 
-line
+# Regular expression meta chars in the title are ignored $
 
-# contents have blank lines
+contents
 
-
-1st line
+# Consecutive blank lines are combined into a single line
 
 
-2nd line
+line 1
+
+
+line 2
 
 
 # same title
 
-1st
+Contents with the same title are combined into one.
 
 # same title
 
 2nd
 
-## other heading level
+## Heading levels and structures are ignored
 
 contents
 
-# title has trailing spaces  
+# Trailing spaces in the title are ignored  
 
 The contents have trailing spaces.  
 
@@ -40,27 +41,33 @@ The contents have trailing spaces.
 
 3rd
 
-#
+# Notes without content output the title only
 
-no title
+#   Spaces before the title are ignored
 
-# no contents
+contents
 
-# no contents2
-
-##no_space_title
-
-The contents are ignored.
-
-#   spaces before title
-
-line
-
-# fenced code block
+# Headings in fenced code blocks are ignored
 
 ```
 # fenced heading
 ```
+
+# There can be no blank line
+contents
+#
+
+no title
+
+# Titles without a space after the # are not recognized
+
+#no_space_title
+
+contents
+
+  # Titles with spaces before the # are not recognized
+
+contents
 
 # URL
 
@@ -72,11 +79,10 @@ github: http://github.com/
 ```sh
 ls -l | nl
 ```
+
 # command-line with $
 
-```sh
+```console
 $ date
 ```
 
-# no blank line between title and contents
-contents

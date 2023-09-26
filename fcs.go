@@ -27,11 +27,12 @@ func WriteTitles(w io.Writer, r io.Reader) {
 		line := scanner.Text()
 
 		if strings.HasPrefix(line, "#") && !isFenced {
-			title := strings.TrimLeft(line, "# ")
-			if title == "" {
+			// skip titles without a space after the `#`
+			if !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
 				continue
 			}
 
+			title := strings.TrimLeft(line, "# ")
 			if !slices.Contains(allTitles, title) {
 				fmt.Fprintln(w, title)
 				allTitles = append(allTitles, title)
@@ -175,5 +176,5 @@ func GetNotesFileName() (string, error) {
 
 // getNoteTitleRegexp returns a regular expression to search for the title of the note.
 func getNoteTitleRegexp(title string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^#*\\s+%s$", regexp.QuoteMeta(title)))
+	return regexp.MustCompile(fmt.Sprintf("^#+\\s+%s$", regexp.QuoteMeta(title)))
 }

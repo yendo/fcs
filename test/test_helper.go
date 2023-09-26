@@ -41,22 +41,21 @@ func GetTestDataFullPath(filename string) string {
 // GetExpectedTitles returns the titles of the test notes.
 func GetExpectedTitles() string {
 	titles := `title
-long title one
-title has regular expression meta chars $
-contents have blank lines
+Long title and contents have lines
+Regular expression meta chars in the title are ignored $
+Consecutive blank lines are combined into a single line
 same title
-other heading level
-title has trailing spaces
-no contents
-no contents2
-no_space_title
-spaces before title
-fenced code block
+Heading levels and structures are ignored
+Trailing spaces in the title are ignored
+Notes without content output the title only
+Spaces before the title are ignored
+Headings in fenced code blocks are ignored
+There can be no blank line
+Titles without a space after the # are not recognized
 URL
 command-line
 command-line with $
-no blank line between title and contents
 `
 
-	return strings.Replace(titles, "trailing spaces", "trailing spaces  ", 1)
+	return strings.Replace(titles, "Trailing spaces in the title are ignored", "Trailing spaces in the title are ignored  ", 1)
 }
