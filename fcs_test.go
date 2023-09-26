@@ -19,7 +19,7 @@ func TestWriteTitles(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	file := test.OpenTestNotesFile(t)
+	file := test.OpenTestNotesFile(t, test.TestNotesFile)
 	fcs.WriteTitles(&buf, file)
 
 	assert.Equal(t, test.GetExpectedTitles(), buf.String())
@@ -32,21 +32,104 @@ func TestWriteContents(t *testing.T) {
 		title    string
 		contents string
 	}{
-		{"# title", "# title\n\n" + "contents\n"},
-		{"# long title one", "# long title one\n\n" + "line one\nline two\n"},
-		{"# title has regular expression meta chars $", "# title has regular expression meta chars $\n\n" + "line\n"},
-		{"# contents have blank lines", "# contents have blank lines\n\n" + "1st line\n\n2nd line\n"},
-		{"# same title", "# same title\n\n1st\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
-		{"## other heading level", "## other heading level\n\n" + "contents\n"},
-		{"# title has trailing spaces  ", "# title has trailing spaces  \n\n" + "The contents have trailing spaces.  \n"},
-		{"#", ""},
-		{"# no contents", "# no contents\n"},
-		{"#no_space_title", ""},
-		{"#   spaces before title", "#   spaces before title\n\n" + "line\n"},
-		{"# fenced code block", "# fenced code block\n\n" + "```\n" + "# fenced heading\n" + "```\n"},
-		{"# URL", "# URL\n\n" + "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
-		{"# command-line", "# command-line\n\n" + "```sh\n" + "ls -l | nl\n" + "```\n"},
-		{"# no blank line between title and contents", "# no blank line between title and contents\n" + "contents\n"},
+		{"# title\n", "contents\n"},
+		{"# Long title and contents have lines\n", "line 1\n\nline 2\n"},
+		{"# Regular expression meta chars in the title are ignored $\n", "contents\n"},
+		{"# Consecutive blank lines are combined into a single line\n", "line 1\n\nline 2\n"},
+		{"# same title\n", "Contents with the same title are combined into one.\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
+		{"## Heading levels and structures are ignored\n", "contents\n"},
+		{"# Trailing spaces in the title are ignored  \n", "The contents have trailing spaces.  \n"},
+		{"# Notes without content output the title only", ""},
+		{"#   Spaces before the title are ignored\n", "contents\n"},
+		{"# Headings in fenced code blocks are ignored\n", "```\n" + "# fenced heading\n" + "```\n"},
+		{"# There can be no blank line", "contents\n"},
+		{"# URL\n", "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
+		{"# command-line\n", "```sh\n" + "ls -l | nl\n" + "```\n"},
+		{"# command-line with $\n", "```console\n" + "$ date\n" + "```\n"},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
+			file := test.OpenTestNotesFile(t, test.TestNotesFile)
+			var buf bytes.Buffer
+			title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+
+			fcs.WriteContents(&buf, file, title)
+
+			assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
+		})
+	}
+}
+
+func TestWriteNoContents(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		desc  string
+		title string
+	}{
+		{
+			desc:  "Titles without strings are not recognized.",
+			title: "#",
+		},
+		{
+			desc:  "Titles without a space after the `#` are not recognized",
+			title: "#no_space_title",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.title, func(t *testing.T) {
+			t.Parallel()
+
+			var buf bytes.Buffer
+			file := test.OpenTestNotesFile(t, test.TestNotesFile)
+
+			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
+
+			assert.Empty(t, buf.String())
+		})
+	}
+}
+
+func TestWriteFirstURL(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+	file := test.OpenTestNotesFile(t, test.TestNotesFile)
+
+	fcs.WriteFirstURL(&buf, file, "URL")
+
+	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+}
+
+func TestWriteFirstCmdLine(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		title  string
+		output bool
+	}{
+		{"shell 1", true},
+		{"shell 2", true},
+		{"shell 3", true},
+		{"sh", true},
+		{"shell-script", true},
+		{"bash", true},
+		{"zsh", true},
+		{"powershell", true},
+		{"posh", true},
+		{"pwsh", true},
+		{"shellsession", true},
+		{"bash session", true},
+		{"console", true},
+		{"go", false},
+		{"no identifier", false},
+		{"other identifier", false},
 	}
 
 	for _, tc := range tests {
@@ -56,68 +139,12 @@ func TestWriteContents(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
+			file := test.OpenTestNotesFile(t, test.TestShellBlockFile)
 
-			file := test.OpenTestNotesFile(t)
-			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "# "))
+			fcs.WriteFirstCmdLine(&buf, file, tc.title)
 
-			assert.Equal(t, tc.contents, buf.String())
-		})
-	}
-}
-
-func TestWriteFirstURL(t *testing.T) {
-	t.Parallel()
-
-	var buf bytes.Buffer
-
-	file := test.OpenTestNotesFile(t)
-	fcs.WriteFirstURL(&buf, file, "URL")
-
-	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
-}
-
-func TestWriteFirstCmdLine(t *testing.T) {
-	t.Parallel()
-
-	var buf bytes.Buffer
-
-	file := test.OpenTestNotesFile(t)
-	fcs.WriteFirstCmdLine(&buf, file, "command-line")
-
-	assert.Equal(t, "ls -l | nl\n", buf.String())
-}
-
-func TestIsShellCodeBlockBegin(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		fence  string
-		result bool
-	}{
-		{fence: "```shell", result: true},
-		{fence: "``` shell", result: true},
-		{fence: "````shell", result: false},
-		{fence: "```sh", result: true},
-		{fence: "```shell-script", result: true},
-		{fence: "```bash", result: true},
-		{fence: "```zsh", result: true},
-		{fence: "```powershell", result: true},
-		{fence: "```posh", result: true},
-		{fence: "```pwsh", result: true},
-		{fence: "```shellsession", result: true},
-		{fence: "```bash session", result: true},
-		{fence: "```console", result: true},
-		{fence: "```", result: false},
-		{fence: "```go", result: false},
-		{fence: "```sharp", result: false},
-	}
-
-	for _, tc := range tests {
-		tc := tc
-
-		t.Run(tc.fence, func(t *testing.T) {
-			t.Parallel()
-			assert.Equal(t, tc.result, fcs.IsShellCodeBlockBegin(tc.fence))
+			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
+			assert.Equal(t, expected[tc.output], buf.String())
 		})
 	}
 }
@@ -127,15 +154,15 @@ func TestWriteNoteLocation(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	file := test.OpenTestNotesFile(t)
-	fcs.WriteNoteLocation(&buf, file, "URL")
+	testFile := test.OpenTestNotesFile(t, test.TestLocationFile)
+	fcs.WriteNoteLocation(&buf, testFile, "5th Line")
 
-	testFile := test.GetTestDataFullPath(test.TestNotesFile)
-	assert.Equal(t, fmt.Sprintf("\"%s\" 65\n", testFile), buf.String())
+	assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 }
 
 func TestGetFcsFile(t *testing.T) {
 	t.Run("cannot access user home directory", func(t *testing.T) {
+		t.Setenv("FCS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 
 		fileName, err := fcs.GetNotesFileName()
@@ -157,13 +184,12 @@ func TestGetFcsFile(t *testing.T) {
 
 	t.Run("default filename", func(t *testing.T) {
 		t.Setenv("FCS_NOTES_FILE", "")
-
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
 		filename, err := fcs.GetNotesFileName()
 
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, "fcnotes.md"), filename)
+		assert.Equal(t, filepath.Join(home, fcs.DefaultNotesFile), filename)
 	})
 }

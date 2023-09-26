@@ -14,6 +14,8 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
+const DefaultNotesFile = "fcnotes.md"
+
 // WriteTitles writes the titles of all notes.
 func WriteTitles(w io.Writer, r io.Reader) {
 	var allTitles []string
@@ -25,11 +27,12 @@ func WriteTitles(w io.Writer, r io.Reader) {
 		line := scanner.Text()
 
 		if strings.HasPrefix(line, "#") && !isFenced {
-			title := strings.TrimLeft(line, "# ")
-			if title == "" {
+			// skip titles without a space after the `#`
+			if !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
 				continue
 			}
 
+			title := strings.TrimLeft(line, "# ")
 			if !slices.Contains(allTitles, title) {
 				fmt.Fprintln(w, title)
 				allTitles = append(allTitles, title)
@@ -104,7 +107,7 @@ func WriteFirstCmdLine(w io.Writer, r io.Reader, title string) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if IsShellCodeBlockBegin(line) {
+		if isShellCodeBlockBegin(line) {
 			isFenced = true
 
 			continue
@@ -118,10 +121,10 @@ func WriteFirstCmdLine(w io.Writer, r io.Reader, title string) {
 	}
 }
 
-var reShellCodeBlock = regexp.MustCompile("^```\\s*(\\S+).*$")
+var reShellCodeBlock = regexp.MustCompile("^```+\\s*(\\S+).*$")
 
-// IsShellCodeBlockBegin determines if the line is the beginning of a shell code block.
-func IsShellCodeBlockBegin(line string) bool {
+// isShellCodeBlockBegin determines if the line is the beginning of a shell code block.
+func isShellCodeBlockBegin(line string) bool {
 	shellList := []string{
 		"shell", "sh", "shell-script", "bash", "zsh",
 		"powershell", "posh", "pwsh",
@@ -166,12 +169,12 @@ func GetNotesFileName() (string, error) {
 		return "", fmt.Errorf("cannot access user home directory: %w", err)
 	}
 
-	fileName = filepath.Join(home, "fcnotes.md")
+	fileName = filepath.Join(home, DefaultNotesFile)
 
 	return fileName, nil
 }
 
 // getNoteTitleRegexp returns a regular expression to search for the title of the note.
 func getNoteTitleRegexp(title string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^#*\\s+%s$", regexp.QuoteMeta(title)))
+	return regexp.MustCompile(fmt.Sprintf("^#+\\s+%s$", regexp.QuoteMeta(title)))
 }

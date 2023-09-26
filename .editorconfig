@@ -10,7 +10,7 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[test/test_fcnotes.md]
+[test/testdata/test_fcnotes.md]
 trim_trailing_whitespace = false
 
 [Makefile]
