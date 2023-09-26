@@ -18,18 +18,18 @@ test-v: unit-test-v integration-test-v
 
 .PHONY: unit-test
 unit-test:
-	go test -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
+	go test -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
 	@go tool cover -html=cover-ut.out -o cover-ut.html
 
 .PHONY: unit-test-v
 unit-test-v:
-	go test -v -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
+	go test -v -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
 	@go tool cover -html=cover-ut.out -o cover-ut.html
 
 .PHONY: integration-test
 integration-test: test/$(BINARY)
 	@mkdir -p coverdir
-	GOCOVERDIR=coverdir go test ./test
+	GOCOVERDIR=coverdir go test -shuffle=on ./test
 	@go tool covdata percent -i=$(GOCOVERDIR)
 	@go tool covdata textfmt -i=$(GOCOVERDIR) -o cover-it.out
 	@go tool cover -html=cover-it.out -o cover-it.html
@@ -37,7 +37,7 @@ integration-test: test/$(BINARY)
 .PHONY: integration-test-v
 integration-test-v: test/$(BINARY)
 	@mkdir -p coverdir
-	GOCOVERDIR=coverdir go test -v ./test
+	GOCOVERDIR=coverdir go test -v -shuffle=on ./test
 	@go tool covdata percent -i=$(GOCOVERDIR)
 	@go tool covdata textfmt -i=$(GOCOVERDIR) -o cover-it.out
 	@go tool cover -html=cover-it.out -o cover-it.html
