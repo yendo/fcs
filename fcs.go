@@ -56,13 +56,12 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 	isScope := false
 	isFenced := false
 	isBlank := false
-	re := getNoteTitleRegexp(title)
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if !isFenced && re.MatchString(line) {
+		if !isFenced && isContentsBegin(line, title) {
 			isScope = true
 		} else if isScope {
 			switch {
@@ -85,6 +84,22 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 			fmt.Fprintln(w, line)
 		}
 	}
+}
+
+// isContentsBegin returns if the line is the beginning of the contents.
+func isContentsBegin(line string, title string) bool {
+	// Title must start with #.
+	if !strings.HasPrefix(line, "#") {
+		return false
+	}
+
+	// When the title is not blank, the title must have a space after #.
+	if title != "" && !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
+		return false
+	}
+
+	// When the trimmed line and title match, the content starts.
+	return strings.Trim(line, "# ") == strings.Trim(title, "# ")
 }
 
 // isContentsEnd returns if the line is the end of the contents.
@@ -165,13 +180,12 @@ func isShellCodeBlockBegin(line string) bool {
 func WriteNoteLocation(w io.Writer, file *os.File, title string) {
 	c := 0
 	scanner := bufio.NewScanner(file)
-	r := getNoteTitleRegexp(title)
 
 	for scanner.Scan() {
 		c++
 		line := scanner.Text()
 
-		if r.MatchString(line) {
+		if isContentsBegin(line, title) {
 			fmt.Fprintf(w, "%q %d\n", file.Name(), c)
 
 			break
@@ -194,13 +208,4 @@ func GetNotesFileName() (string, error) {
 	fileName = filepath.Join(home, DefaultNotesFile)
 
 	return fileName, nil
-}
-
-// getNoteTitleRegexp returns a regular expression to search for the title of the note.
-func getNoteTitleRegexp(title string) *regexp.Regexp {
-	if title == "" {
-		return regexp.MustCompile(fmt.Sprintf("^#+\\s*%s\\s*$", regexp.QuoteMeta(title)))
-	} else {
-		return regexp.MustCompile(fmt.Sprintf("^#+\\s+%s\\s*$", regexp.QuoteMeta(title)))
-	}
 }
