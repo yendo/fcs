@@ -57,7 +57,11 @@ contents
 contents
 #
 
-no title
+no title contents are combined into one.
+
+#  
+
+title is only spaces
 
 # Titles without a space after the # are not recognized
 

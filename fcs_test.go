@@ -36,13 +36,17 @@ func TestWriteContents(t *testing.T) {
 		{"# Long title and contents have lines\n", "line 1\n\nline 2\n"},
 		{"# Regular expression meta chars in the title are ignored $\n", "contents\n"},
 		{"# Consecutive blank lines are combined into a single line\n", "line 1\n\nline 2\n"},
-		{"# same title\n", "Contents with the same title are combined into one.\n\n" + "# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
+		{"# same title\n", "Contents with the same title are combined into one.\n\n" +
+			"# same title\n\n2nd\n\n" + "# same title\n\n3rd\n"},
 		{"## Heading levels and structures are ignored\n", "contents\n"},
 		{"# Trailing spaces in the title are ignored  \n", "The contents have trailing spaces.  \n"},
 		{"# Notes without content output the title only", ""},
 		{"#   Spaces before the title are ignored\n", "contents\n"},
 		{"# Headings in fenced code blocks are ignored\n", "```\n" + "# fenced heading\n" + "```\n"},
 		{"# There can be no blank line", "contents\n"},
+		{"#\n", "no title contents are combined into one.\n\n" + "#  \n\n" + "title is only spaces\n"},
+		{"# Titles without a space after the # are not recognized\n", "#no_space_title\n\n" + "contents\n\n" +
+			"  # Titles with spaces before the # are not recognized\n\n" + "contents\n"},
 		{"# URL\n", "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
 		{"# command-line\n", "```sh\n" + "ls -l | nl\n" + "```\n"},
 		{"# command-line with $\n", "```console\n" + "$ date\n" + "```\n"},
@@ -72,12 +76,12 @@ func TestWriteNoContents(t *testing.T) {
 		title string
 	}{
 		{
-			desc:  "Titles without strings are not recognized.",
-			title: "#",
+			desc:  "Titles without a space after the `#` are not recognized as title",
+			title: "#no_space_title",
 		},
 		{
-			desc:  "Titles without a space after the `#` are not recognized",
-			title: "#no_space_title",
+			desc:  "Titles with spaces before the # are not recognized as title",
+			title: "  # Titles with spaces before the # are not recognized",
 		},
 	}
 

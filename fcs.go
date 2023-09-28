@@ -19,6 +19,7 @@ const DefaultNotesFile = "fcnotes.md"
 // WriteTitles writes the titles of all notes.
 func WriteTitles(w io.Writer, r io.Reader) {
 	var allTitles []string
+	var title string
 
 	scanner := bufio.NewScanner(r)
 	isFenced := false
@@ -26,17 +27,21 @@ func WriteTitles(w io.Writer, r io.Reader) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if strings.HasPrefix(line, "#") && !isFenced {
-			// skip titles without a space after the `#`
+		if !isFenced && strings.HasPrefix(line, "#") {
 			if !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
+				// skip titles without a space after the `#`
 				continue
 			}
 
-			title := strings.TrimLeft(line, "# ")
-			if !slices.Contains(allTitles, title) {
-				fmt.Fprintln(w, title)
-				allTitles = append(allTitles, title)
+			title = strings.Trim(line, "# ")
+			if title == "" {
+				continue
 			}
+
+		} else if line != "" && title != "" && !slices.Contains(allTitles, title) {
+			// skip if content or title is blank
+			fmt.Fprintln(w, title)
+			allTitles = append(allTitles, title)
 		}
 
 		if strings.HasPrefix(line, "```") {
@@ -47,20 +52,21 @@ func WriteTitles(w io.Writer, r io.Reader) {
 
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title string) {
+	title = strings.Trim(title, " ")
+
 	isScope := false
 	isFenced := false
 	isBlank := false
-	re := getNoteTitleRegexp(title)
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if re.MatchString(line) && !isFenced {
+		if !isFenced && isContentsBegin(line, title) {
 			isScope = true
 		} else if isScope {
 			switch {
-			case strings.HasPrefix(line, "#") && !isFenced:
+			case !isFenced && isContentsEnd(line):
 				isScope = false
 			case strings.HasPrefix(line, "```"):
 				isFenced = !isFenced
@@ -79,6 +85,38 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 			fmt.Fprintln(w, line)
 		}
 	}
+}
+
+// isContentsBegin returns if the line is the beginning of the contents.
+func isContentsBegin(line string, title string) bool {
+	// Title must start with #.
+	if !strings.HasPrefix(line, "#") {
+		return false
+	}
+
+	// When the title is not blank, the title must have a space after #.
+	if title != "" && !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
+		return false
+	}
+
+	// When the trimmed line and title match, the content starts.
+	return strings.Trim(line, "# ") == strings.Trim(title, "# ")
+}
+
+// isContentsEnd returns if the line is the end of the contents.
+func isContentsEnd(line string) bool {
+	// Title must start with #.
+	if !strings.HasPrefix(line, "#") {
+		return false
+	}
+
+	// Title may be blank.
+	if strings.Trim(line, "# ") == "" {
+		return true
+	}
+
+	// Title must have a space after #
+	return strings.HasPrefix(strings.TrimLeft(line, "#"), " ")
 }
 
 // PrintsFirstURL writes the first URL in the contents of the note.
@@ -143,13 +181,12 @@ func isShellCodeBlockBegin(line string) bool {
 func WriteNoteLocation(w io.Writer, file *os.File, title string) {
 	c := 0
 	scanner := bufio.NewScanner(file)
-	r := getNoteTitleRegexp(title)
 
 	for scanner.Scan() {
 		c++
 		line := scanner.Text()
 
-		if r.MatchString(line) {
+		if isContentsBegin(line, title) {
 			fmt.Fprintf(w, "%q %d\n", file.Name(), c)
 
 			break
@@ -172,9 +209,4 @@ func GetNotesFileName() (string, error) {
 	fileName = filepath.Join(home, DefaultNotesFile)
 
 	return fileName, nil
-}
-
-// getNoteTitleRegexp returns a regular expression to search for the title of the note.
-func getNoteTitleRegexp(title string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^#+\\s+%s$", regexp.QuoteMeta(title)))
 }
