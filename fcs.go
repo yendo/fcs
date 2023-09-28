@@ -32,7 +32,11 @@ func WriteTitles(w io.Writer, r io.Reader) {
 				continue
 			}
 
-			title := strings.TrimLeft(line, "# ")
+			title := strings.Trim(line, "# ")
+			if title == "" {
+				continue
+			}
+
 			if !slices.Contains(allTitles, title) {
 				fmt.Fprintln(w, title)
 				allTitles = append(allTitles, title)
@@ -47,6 +51,8 @@ func WriteTitles(w io.Writer, r io.Reader) {
 
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title string) {
+	title = strings.Trim(title, " ")
+
 	isScope := false
 	isFenced := false
 	isBlank := false
@@ -56,11 +62,11 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if re.MatchString(line) && !isFenced {
+		if !isFenced && re.MatchString(line) {
 			isScope = true
 		} else if isScope {
 			switch {
-			case strings.HasPrefix(line, "#") && !isFenced:
+			case !isFenced && isContentsEnd(line):
 				isScope = false
 			case strings.HasPrefix(line, "```"):
 				isFenced = !isFenced
@@ -79,6 +85,22 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 			fmt.Fprintln(w, line)
 		}
 	}
+}
+
+// isContentsEnd returns if the line is the end of the contents.
+func isContentsEnd(line string) bool {
+	// Title must start with #.
+	if !strings.HasPrefix(line, "#") {
+		return false
+	}
+
+	// Title may be blank.
+	if strings.Trim(line, "# ") == "" {
+		return true
+	}
+
+	// Title must have a space after #
+	return strings.HasPrefix(strings.TrimLeft(line, "#"), " ")
 }
 
 // PrintsFirstURL writes the first URL in the contents of the note.
@@ -176,5 +198,9 @@ func GetNotesFileName() (string, error) {
 
 // getNoteTitleRegexp returns a regular expression to search for the title of the note.
 func getNoteTitleRegexp(title string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^#+\\s+%s$", regexp.QuoteMeta(title)))
+	if title == "" {
+		return regexp.MustCompile(fmt.Sprintf("^#+\\s*%s\\s*$", regexp.QuoteMeta(title)))
+	} else {
+		return regexp.MustCompile(fmt.Sprintf("^#+\\s+%s\\s*$", regexp.QuoteMeta(title)))
+	}
 }

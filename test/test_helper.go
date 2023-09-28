@@ -5,7 +5,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -40,7 +39,7 @@ func GetTestDataFullPath(filename string) string {
 
 // GetExpectedTitles returns the titles of the test notes.
 func GetExpectedTitles() string {
-	titles := `title
+	return `title
 Long title and contents have lines
 Regular expression meta chars in the title are ignored $
 Consecutive blank lines are combined into a single line
@@ -56,6 +55,4 @@ URL
 command-line
 command-line with $
 `
-
-	return strings.Replace(titles, "Trailing spaces in the title are ignored", "Trailing spaces in the title are ignored  ", 1)
 }
