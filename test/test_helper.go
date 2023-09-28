@@ -46,7 +46,6 @@ Consecutive blank lines are combined into a single line
 same title
 Heading levels and structures are ignored
 Trailing spaces in the title are ignored
-Notes without content output the title only
 Spaces before the title are ignored
 Headings in fenced code blocks are ignored
 There can be no blank line

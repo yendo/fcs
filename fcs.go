@@ -19,6 +19,7 @@ const DefaultNotesFile = "fcnotes.md"
 // WriteTitles writes the titles of all notes.
 func WriteTitles(w io.Writer, r io.Reader) {
 	var allTitles []string
+	var title string
 
 	scanner := bufio.NewScanner(r)
 	isFenced := false
@@ -26,21 +27,21 @@ func WriteTitles(w io.Writer, r io.Reader) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if strings.HasPrefix(line, "#") && !isFenced {
-			// skip titles without a space after the `#`
+		if !isFenced && strings.HasPrefix(line, "#") {
 			if !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
+				// skip titles without a space after the `#`
 				continue
 			}
 
-			title := strings.Trim(line, "# ")
+			title = strings.Trim(line, "# ")
 			if title == "" {
 				continue
 			}
 
-			if !slices.Contains(allTitles, title) {
-				fmt.Fprintln(w, title)
-				allTitles = append(allTitles, title)
-			}
+		} else if line != "" && title != "" && !slices.Contains(allTitles, title) {
+			// skip if content or title is blank
+			fmt.Fprintln(w, title)
+			allTitles = append(allTitles, title)
 		}
 
 		if strings.HasPrefix(line, "```") {
