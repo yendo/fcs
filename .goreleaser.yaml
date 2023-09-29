@@ -12,6 +12,7 @@ builds:
     goarch:
       - amd64
       - arm64
+    binary: fcs-cli
 archives:
   - format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
