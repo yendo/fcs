@@ -57,6 +57,7 @@ func TestWriteContents(t *testing.T) {
 
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
+
 			file := test.OpenTestNotesFile(t, test.TestNotesFile)
 			var buf bytes.Buffer
 			title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")

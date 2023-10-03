@@ -19,12 +19,10 @@ test-v: unit-test-v integration-test-v
 .PHONY: unit-test
 unit-test:
 	go test -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
-	@go tool cover -html=cover-ut.out -o cover-ut.html
 
 .PHONY: unit-test-v
 unit-test-v:
 	go test -v -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
-	@go tool cover -html=cover-ut.out -o cover-ut.html
 
 .PHONY: integration-test
 integration-test: test/$(BINARY)
@@ -32,7 +30,6 @@ integration-test: test/$(BINARY)
 	GOCOVERDIR=coverdir go test -shuffle=on ./test
 	@go tool covdata percent -i=$(GOCOVERDIR)
 	@go tool covdata textfmt -i=$(GOCOVERDIR) -o cover-it.out
-	@go tool cover -html=cover-it.out -o cover-it.html
 
 .PHONY: integration-test-v
 integration-test-v: test/$(BINARY)
@@ -40,7 +37,6 @@ integration-test-v: test/$(BINARY)
 	GOCOVERDIR=coverdir go test -v -shuffle=on ./test
 	@go tool covdata percent -i=$(GOCOVERDIR)
 	@go tool covdata textfmt -i=$(GOCOVERDIR) -o cover-it.out
-	@go tool cover -html=cover-it.out -o cover-it.html
 
 .PHONY: super-linter
 super-linter: clean
