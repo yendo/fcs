@@ -1,4 +1,4 @@
-module github.com/yendo/fcs
+module github.com/yendo/fcqs
 
 go 1.21
 

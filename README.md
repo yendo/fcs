@@ -1,10 +1,10 @@
-# fcs
+# fcqs
 
-fcs is a quick searcher for flashcards-like notes with fzf.
+fcqs is a quick searcher for flashcards-like notes with fzf.
 
 ## Usage
 
-Press `Ctrl+o` (customizable) to launch fcs on command-line.
+Press `Ctrl+o` (customizable) to launch fcqs on command-line.
 
 You can search for the title of the note with fzf.
 The preview screen shows the contents of the note.
@@ -18,35 +18,35 @@ Pressing enter outputs the note to standard output.
 
 ## Installation
 
-Install [fzf](https://github.com/junegunn/fzf) which is required to use fcs.
+Install [fzf](https://github.com/junegunn/fzf) which is required to use fcqs.
 
-Download the fcs archive from [GitHub Releases](https://github.com/yendo/fcs/releases) and extract it.
+Download the fcqs archive from [GitHub Releases](https://github.com/yendo/fcqs/releases) and extract it.
 
-Copy the command `fcs-cli` to a directory with a path.
+Copy the command `fcqs-cli` to a directory with a path.
 
 ``` sh
-install fcs-cli ~/.local/bin/
+install fcqs-cli ~/.local/bin/
 ```
 
-Add the following function for fcs to `~/.bashrc` for Linux, Bash and Vim users.
+Add the following function for fcqs to `~/.bashrc` for Linux, Bash and Vim users.
 You have to install xclip to copy the note to clip board.
 See [shell settings document](docs/shell_settings.md) for other cases.
 
 ``` bash
 export VISUAL="vim"
 
-fcs() {
-  local title=$(fcs-cli | \
-    fzf --preview "fcs-cli {}" \
-        --bind "ctrl-y:execute-silent(fcs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
-  fcs-cli "$title"
-  local command=$(fcs-cli -c "$title")
+fcqs() {
+  local title=$(fcqs-cli | \
+    fzf --preview "fcqs-cli {}" \
+        --bind "ctrl-y:execute-silent(fcqs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcqs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcqs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
+  fcqs-cli "$title"
+  local command=$(fcqs-cli -c "$title")
   READLINE_LINE="${READLINE_LINE:0:$READLINE_POINT}${command}${READLINE_LINE:$READLINE_POINT}"
   READLINE_POINT=$(( READLINE_POINT + ${#command} ))
 }
 
 # You can customize the key binding
-bind -x '"\C-o":fcs'
+bind -x '"\C-o":fcqs'
 ```
 
 ## Notes specification
@@ -54,7 +54,7 @@ bind -x '"\C-o":fcs'
 ### File
 
 The default notes file is `~/fcnotes.md`.
-The file can be changed by the environment variable `FCS_NOTES_FILE`.
+The file can be changed by the environment variable `FCQS_NOTES_FILE`.
 
 ### Format
 
@@ -74,7 +74,7 @@ contents2
 
 ## Develop
 
-Build the command `fcs-cli` with Go 1.21:
+Build the command `fcqs-cli` with Go 1.21:
 
 ``` sh
 make

@@ -1,6 +1,6 @@
-# Shell Settings for fcs
+# Shell Settings for fcqs
 
-Add the following function for fcs to the shell script setting file.
+Add the following function for fcqs to the shell script setting file.
 
 ## Linux and bash
 
@@ -11,33 +11,33 @@ for Vim, Emacs, gedit, etc.
 ```bash
 export VISUAL="vim" # your editor
 
-fcs() {
-  local title=$(fcs-cli | \
-    fzf --preview "fcs-cli {}" \
-        --bind "ctrl-y:execute-silent(fcs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
-  fcs-cli "$title"
-  local command=$(fcs-cli -c "$title")
+fcqs() {
+  local title=$(fcqs-cli | \
+    fzf --preview "fcqs-cli {}" \
+        --bind "ctrl-y:execute-silent(fcqs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcqs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcqs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
+  fcqs-cli "$title"
+  local command=$(fcqs-cli -c "$title")
   READLINE_LINE="${READLINE_LINE:0:$READLINE_POINT}${command}${READLINE_LINE:$READLINE_POINT}"
   READLINE_POINT=$(( READLINE_POINT + ${#command} ))
 }
 
 # You can customize the key binding
-bind -x '"\C-o":fcs'
+bind -x '"\C-o":fcqs'
 ```
 
 for Visual Studio Code:
 
 ```bash
-fcs() {
-  local title=$(fcs-cli | \
-    fzf --preview "fcs-cli {}" \
-        --bind "ctrl-y:execute-silent(fcs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
-  fcs-cli "$title"
-  local command=$(fcs-cli -c "$title")
+fcqs() {
+  local title=$(fcqs-cli | \
+    fzf --preview "fcqs-cli {}" \
+        --bind "ctrl-y:execute-silent(fcqs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcqs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcqs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
+  fcqs-cli "$title"
+  local command=$(fcqs-cli -c "$title")
   READLINE_LINE="${READLINE_LINE:0:$READLINE_POINT}${command}${READLINE_LINE:$READLINE_POINT}"
   READLINE_POINT=$(( READLINE_POINT + ${#command} ))
 }
 
 # You can customize the key binding
-bind -x '"\C-o":fcs'
+bind -x '"\C-o":fcqs'
 ```

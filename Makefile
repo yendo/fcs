@@ -1,14 +1,14 @@
 VERSION := $(shell git describe --tags --abbrev=0 | awk -F "." '{sub("v","", $$1); printf "%s.%s.%s\n",$$1,$$2,$$3+1}')
 
-BINARY=fcs-cli
-GO_FILES=cmd/fcs-cli/main.go fcs.go go.mod go.sum
+BINARY=fcqs-cli
+GO_FILES=cmd/fcqs-cli/main.go fcqs.go go.mod go.sum
 GOCOVERDIR=coverdir
 
 $(BINARY): $(GO_FILES)
-	go build -trimpath -ldflags "-s -w -X main.version=${VERSION}-snapshot" ./cmd/fcs-cli/
+	go build -trimpath -ldflags "-s -w -X main.version=${VERSION}-snapshot" ./cmd/fcqs-cli/
 
 test/$(BINARY): $(GO_FILES)
-	go build -o $@ -cover -trimpath -ldflags "-s -w -X main.version=0.0.0-test" ./cmd/fcs-cli/
+	go build -o $@ -cover -trimpath -ldflags "-s -w -X main.version=0.0.0-test" ./cmd/fcqs-cli/
 
 .PHONY: test
 test: unit-test integration-test
@@ -18,11 +18,11 @@ test-v: unit-test-v integration-test-v
 
 .PHONY: unit-test
 unit-test:
-	go test -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
+	go test -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcqs-cli/ .
 
 .PHONY: unit-test-v
 unit-test-v:
-	go test -v -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcs-cli/ .
+	go test -v -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcqs-cli/ .
 
 .PHONY: integration-test
 integration-test: test/$(BINARY)
