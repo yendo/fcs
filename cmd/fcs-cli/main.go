@@ -27,7 +27,6 @@ func run(w io.Writer) error {
 
 	if *showVersion {
 		fmt.Fprintln(w, version)
-
 		return nil
 	}
 
@@ -76,7 +75,6 @@ func main() {
 
 	if err := run(os.Stdout); err != nil {
 		exitCode = 1
-
 		fmt.Fprintln(os.Stderr, err)
 	}
 

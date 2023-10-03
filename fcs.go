@@ -78,7 +78,6 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 		if isScope && line != "" {
 			if isBlank {
 				isBlank = false
-
 				fmt.Fprintln(w, "")
 			}
 
@@ -147,7 +146,6 @@ func WriteFirstCmdLine(w io.Writer, r io.Reader, title string) {
 
 		if isShellCodeBlockBegin(line) {
 			isFenced = true
-
 			continue
 		} else if strings.HasPrefix(line, "```") && isFenced {
 			break
@@ -188,7 +186,6 @@ func WriteNoteLocation(w io.Writer, file *os.File, title string) {
 
 		if isContentsBegin(line, title) {
 			fmt.Fprintf(w, "%q %d\n", file.Name(), c)
-
 			break
 		}
 	}
@@ -207,6 +204,5 @@ func GetNotesFileName() (string, error) {
 	}
 
 	fileName = filepath.Join(home, DefaultNotesFile)
-
 	return fileName, nil
 }
