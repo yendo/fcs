@@ -75,7 +75,7 @@ contents
 
 # URL
 
-fcs: http://github.com/yendo/fcs/
+fcqs: http://github.com/yendo/fcqs/
 github: http://github.com/
 
 # command-line

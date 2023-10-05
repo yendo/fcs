@@ -1,4 +1,4 @@
-package fcs
+package fcqs
 
 import (
 	"bufio"
@@ -193,7 +193,7 @@ func WriteNoteLocation(w io.Writer, file *os.File, title string) {
 
 // GetNotesFileName returns the filename of the notes.
 func GetNotesFileName() (string, error) {
-	fileName := os.Getenv("FCS_NOTES_FILE")
+	fileName := os.Getenv("FCQS_NOTES_FILE")
 	if fileName != "" {
 		return fileName, nil
 	}

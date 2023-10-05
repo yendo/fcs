@@ -1,4 +1,4 @@
-package fcs_test
+package fcqs_test
 
 import (
 	"bytes"
@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/yendo/fcs"
-	"github.com/yendo/fcs/test"
+	"github.com/yendo/fcqs"
+	"github.com/yendo/fcqs/test"
 )
 
 func TestWriteTitles(t *testing.T) {
@@ -20,7 +20,7 @@ func TestWriteTitles(t *testing.T) {
 	var buf bytes.Buffer
 
 	file := test.OpenTestNotesFile(t, test.TestNotesFile)
-	fcs.WriteTitles(&buf, file)
+	fcqs.WriteTitles(&buf, file)
 
 	assert.Equal(t, test.GetExpectedTitles(), buf.String())
 }
@@ -47,7 +47,7 @@ func TestWriteContents(t *testing.T) {
 		{"#\n", "no title contents are combined into one.\n\n" + "#  \n\n" + "title is only spaces\n"},
 		{"# Titles without a space after the # are not recognized\n", "#no_space_title\n\n" + "contents\n\n" +
 			"  # Titles with spaces before the # are not recognized\n\n" + "contents\n"},
-		{"# URL\n", "fcs: http://github.com/yendo/fcs/\n" + "github: http://github.com/\n"},
+		{"# URL\n", "fcqs: http://github.com/yendo/fcqs/\n" + "github: http://github.com/\n"},
 		{"# command-line\n", "```sh\n" + "ls -l | nl\n" + "```\n"},
 		{"# command-line with $\n", "```console\n" + "$ date\n" + "```\n"},
 	}
@@ -62,7 +62,7 @@ func TestWriteContents(t *testing.T) {
 			var buf bytes.Buffer
 			title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
-			fcs.WriteContents(&buf, file, title)
+			fcqs.WriteContents(&buf, file, title)
 
 			assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
 		})
@@ -94,7 +94,7 @@ func TestWriteNoContents(t *testing.T) {
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-			fcs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
+			fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
 
 			assert.Empty(t, buf.String())
 		})
@@ -107,9 +107,9 @@ func TestWriteFirstURL(t *testing.T) {
 	var buf bytes.Buffer
 	file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-	fcs.WriteFirstURL(&buf, file, "URL")
+	fcqs.WriteFirstURL(&buf, file, "URL")
 
-	assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+	assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
 }
 
 func TestWriteFirstCmdLine(t *testing.T) {
@@ -146,7 +146,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestShellBlockFile)
 
-			fcs.WriteFirstCmdLine(&buf, file, tc.title)
+			fcqs.WriteFirstCmdLine(&buf, file, tc.title)
 
 			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
 			assert.Equal(t, expected[tc.output], buf.String())
@@ -160,17 +160,17 @@ func TestWriteNoteLocation(t *testing.T) {
 	var buf bytes.Buffer
 
 	testFile := test.OpenTestNotesFile(t, test.TestLocationFile)
-	fcs.WriteNoteLocation(&buf, testFile, "5th Line")
+	fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
 
 	assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 }
 
-func TestGetFcsFile(t *testing.T) {
+func TestGetFcqsFile(t *testing.T) {
 	t.Run("cannot access user home directory", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 
-		fileName, err := fcs.GetNotesFileName()
+		fileName, err := fcqs.GetNotesFileName()
 
 		assert.Empty(t, fileName)
 		assert.Error(t, err)
@@ -179,22 +179,22 @@ func TestGetFcsFile(t *testing.T) {
 
 	t.Run("set from environment variable", func(t *testing.T) {
 		expectedFileName := "test_file_from_env.md"
-		t.Setenv("FCS_NOTES_FILE", expectedFileName)
+		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
 
-		fileName, err := fcs.GetNotesFileName()
+		fileName, err := fcqs.GetNotesFileName()
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileName, fileName)
 	})
 
 	t.Run("default filename", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("FCQS_NOTES_FILE", "")
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
-		filename, err := fcs.GetNotesFileName()
+		filename, err := fcqs.GetNotesFileName()
 
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, fcs.DefaultNotesFile), filename)
+		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), filename)
 	})
 }

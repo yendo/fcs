@@ -20,7 +20,7 @@ type stdBuf struct {
 }
 
 func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
-	cmd := exec.Command("./fcs-cli", args...)
+	cmd := exec.Command("./fcqs-cli", args...)
 
 	cmd.Env = append(os.Environ(), "GOCOVERDIR=../coverdir")
 	cmd.Stdout = &b.stdout
@@ -30,7 +30,7 @@ func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 }
 
 func TestCmdSuccess(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
 
 	tests := []struct {
 		title   string
@@ -45,7 +45,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "with url flag and an arg",
 			options: []string{"-u", "URL"},
-			stdout:  "http://github.com/yendo/fcs/\n",
+			stdout:  "http://github.com/yendo/fcqs/\n",
 		},
 		{
 			title:   "with cmd flag and an arg",
@@ -88,7 +88,7 @@ func TestCmdSuccess(t *testing.T) {
 }
 
 func TestCmdFail(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
 
 	tests := []struct {
 		title   string
@@ -136,7 +136,7 @@ func TestCmdFail(t *testing.T) {
 }
 
 func TestCmdNotesLocation(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", TestLocationFile)
+	t.Setenv("FCQS_NOTES_FILE", TestLocationFile)
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd("-l", "5th Line")
 
@@ -148,7 +148,7 @@ func TestCmdNotesLocation(t *testing.T) {
 }
 
 func TestUserHomeDirNotExists(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", "")
+	t.Setenv("FCQS_NOTES_FILE", "")
 	t.Setenv("HOME", "")
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd()
@@ -161,7 +161,7 @@ func TestUserHomeDirNotExists(t *testing.T) {
 }
 
 func TestNotesNotExists(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", "not_exists")
+	t.Setenv("FCQS_NOTES_FILE", "not_exists")
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd()
 
@@ -174,7 +174,7 @@ func TestNotesNotExists(t *testing.T) {
 
 func TestDefaultNoteExists(t *testing.T) {
 	// Arrange
-	t.Setenv("FCS_NOTES_FILE", "")
+	t.Setenv("FCQS_NOTES_FILE", "")
 
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)

@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/yendo/fcs"
+	"github.com/yendo/fcqs"
 )
 
 var (
@@ -30,7 +30,7 @@ func run(w io.Writer) error {
 		return nil
 	}
 
-	fileName, err := fcs.GetNotesFileName()
+	fileName, err := fcqs.GetNotesFileName()
 	if err != nil {
 		return fmt.Errorf("cannot get notes file name: %w", err)
 	}
@@ -48,11 +48,11 @@ func run(w io.Writer) error {
 
 		switch {
 		case *showURL:
-			fcs.WriteFirstURL(w, file, args[0])
+			fcqs.WriteFirstURL(w, file, args[0])
 		case *showCmd:
-			fcs.WriteFirstCmdLine(w, file, args[0])
+			fcqs.WriteFirstCmdLine(w, file, args[0])
 		case *showLoc:
-			fcs.WriteNoteLocation(w, file, args[0])
+			fcqs.WriteNoteLocation(w, file, args[0])
 		}
 
 		return nil
@@ -60,9 +60,9 @@ func run(w io.Writer) error {
 
 	switch len(args) {
 	case 0:
-		fcs.WriteTitles(w, file)
+		fcqs.WriteTitles(w, file)
 	case 1:
-		fcs.WriteContents(w, file, args[0])
+		fcqs.WriteContents(w, file, args[0])
 	default:
 		return ErrInvalidNumberOfArgs
 	}

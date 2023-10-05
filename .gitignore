@@ -1,4 +1,4 @@
-/fcs-cli
-test/fcs-cli
+/fcqs-cli
+test/fcqs-cli
 /cover*
 /dist/

@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/yendo/fcs"
-	"github.com/yendo/fcs/test"
+	"github.com/yendo/fcqs"
+	"github.com/yendo/fcqs/test"
 )
 
 func setCommandLineFlag(t *testing.T, f string) {
@@ -37,10 +37,10 @@ func setOSArgs(t *testing.T, args []string) {
 }
 
 func TestRunSuccess(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
 
 	t.Run("without args", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli"})
+		setOSArgs(t, []string{"fcqs-cli"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -50,7 +50,7 @@ func TestRunSuccess(t *testing.T) {
 	})
 
 	t.Run("with an arg", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "title"})
+		setOSArgs(t, []string{"fcqs-cli", "title"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -62,7 +62,7 @@ func TestRunSuccess(t *testing.T) {
 
 func TestRunFail(t *testing.T) {
 	t.Run("cannot access UserHomeDir", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 		var buf bytes.Buffer
 
@@ -74,20 +74,20 @@ func TestRunFail(t *testing.T) {
 	})
 
 	t.Run("cannot access notes file", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", "")
+		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "no_exits")
 		var buf bytes.Buffer
 
 		err := run(&buf)
 
 		assert.Error(t, err)
-		assert.EqualError(t, err, fmt.Sprintf("cannot access notes file: open no_exits/%s: no such file or directory", fcs.DefaultNotesFile))
+		assert.EqualError(t, err, fmt.Sprintf("cannot access notes file: open no_exits/%s: no such file or directory", fcqs.DefaultNotesFile))
 		assert.Empty(t, buf.String())
 	})
 
 	t.Run("with two args", func(t *testing.T) {
-		t.Setenv("FCS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
-		setOSArgs(t, []string{"fcs-cli", "title", "other"})
+		t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+		setOSArgs(t, []string{"fcqs-cli", "title", "other"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -100,7 +100,7 @@ func TestRunFail(t *testing.T) {
 
 func TestRunWithVersionFlag(t *testing.T) {
 	setCommandLineFlag(t, "v")
-	setOSArgs(t, []string{"fcs-cli", "-v"})
+	setOSArgs(t, []string{"fcqs-cli", "-v"})
 	var buf bytes.Buffer
 
 	err := run(&buf)
@@ -110,11 +110,11 @@ func TestRunWithVersionFlag(t *testing.T) {
 }
 
 func TestRunWithURLFlag(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
 	setCommandLineFlag(t, "u")
 
 	t.Run("with no args", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-u"})
+		setOSArgs(t, []string{"fcqs-cli", "-u"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -125,22 +125,22 @@ func TestRunWithURLFlag(t *testing.T) {
 	})
 
 	t.Run("with a arg", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-u", "URL"})
+		setOSArgs(t, []string{"fcqs-cli", "-u", "URL"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
 
 		assert.NoError(t, err)
-		assert.Equal(t, "http://github.com/yendo/fcs/\n", buf.String())
+		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
 	})
 }
 
 func TestRunWithCmdFlag(t *testing.T) {
-	t.Setenv("FCS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
 	setCommandLineFlag(t, "c")
 
 	t.Run("with no args", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-c"})
+		setOSArgs(t, []string{"fcqs-cli", "-c"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -151,7 +151,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 	})
 
 	t.Run("with a arg", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-c", "command-line"})
+		setOSArgs(t, []string{"fcqs-cli", "-c", "command-line"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -161,7 +161,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 	})
 
 	t.Run("with a arg has $", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-c", "command-line with $"})
+		setOSArgs(t, []string{"fcqs-cli", "-c", "command-line with $"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -173,11 +173,11 @@ func TestRunWithCmdFlag(t *testing.T) {
 
 func TestRunWithLocationFlag(t *testing.T) {
 	testFileName := test.GetTestDataFullPath(test.TestLocationFile)
-	t.Setenv("FCS_NOTES_FILE", testFileName)
+	t.Setenv("FCQS_NOTES_FILE", testFileName)
 	setCommandLineFlag(t, "l")
 
 	t.Run("with no args", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-l"})
+		setOSArgs(t, []string{"fcqs-cli", "-l"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
@@ -188,7 +188,7 @@ func TestRunWithLocationFlag(t *testing.T) {
 	})
 
 	t.Run("with a arg", func(t *testing.T) {
-		setOSArgs(t, []string{"fcs-cli", "-l", "5th Line"})
+		setOSArgs(t, []string{"fcqs-cli", "-l", "5th Line"})
 		var buf bytes.Buffer
 
 		err := run(&buf)
