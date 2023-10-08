@@ -8,7 +8,7 @@ Press `Ctrl+o` (customizable) to launch fcqs on command-line.
 
 You can search for the title of the note with fzf.
 The preview screen shows the contents of the note.
-Pressing enter outputs the note to standard output.
+The following key bindings are available.
 
 - Enter key: Output the note to standard output.
   If the notes has shell fenced code blocks, the first block is pasted to the command-line.
