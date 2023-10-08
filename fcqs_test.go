@@ -26,8 +26,6 @@ func TestWriteTitles(t *testing.T) {
 }
 
 func TestWriteContents(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		title    string
 		contents string
@@ -52,21 +50,46 @@ func TestWriteContents(t *testing.T) {
 		{"# command-line with $\n", "```console\n" + "$ date\n" + "```\n"},
 	}
 
-	for _, tc := range tests {
-		tc := tc
+	t.Run("contents with title", func(t *testing.T) {
+		t.Setenv("FCQS_CONTENTS_NO_TITLE", "")
+		os.Unsetenv("FCQS_CONTENTS_NO_TITLE")
 
-		t.Run(tc.title, func(t *testing.T) {
-			t.Parallel()
+		for _, tc := range tests {
+			tc := tc
 
-			file := test.OpenTestNotesFile(t, test.TestNotesFile)
-			var buf bytes.Buffer
-			title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+			t.Run(tc.title, func(t *testing.T) {
+				t.Parallel()
 
-			fcqs.WriteContents(&buf, file, title)
+				file := test.OpenTestNotesFile(t, test.TestNotesFile)
+				var buf bytes.Buffer
+				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
-			assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
-		})
-	}
+				fcqs.WriteContents(&buf, file, title)
+
+				assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
+			})
+		}
+	})
+
+	t.Run("contents without title", func(t *testing.T) {
+		t.Setenv("FCQS_CONTENTS_NO_TITLE", "1")
+
+		for _, tc := range tests {
+			tc := tc
+
+			t.Run(tc.title, func(t *testing.T) {
+				t.Parallel()
+
+				file := test.OpenTestNotesFile(t, test.TestNotesFile)
+				var buf bytes.Buffer
+				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+
+				fcqs.WriteContents(&buf, file, title)
+
+				assert.Equal(t, tc.contents, buf.String())
+			})
+		}
+	})
 }
 
 func TestWriteNoContents(t *testing.T) {

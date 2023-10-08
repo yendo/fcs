@@ -53,10 +53,10 @@ func WriteTitles(w io.Writer, r io.Reader) {
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title string) {
 	title = strings.Trim(title, " ")
+	_, isNoTitle := os.LookupEnv("FCQS_CONTENTS_NO_TITLE")
 
-	isScope := false
-	isFenced := false
-	isBlank := false
+	var isScope, isFenced, isBlank bool
+	var outputLines int
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
@@ -78,10 +78,16 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 		if isScope && line != "" {
 			if isBlank {
 				isBlank = false
-				fmt.Fprintln(w, "")
+
+				if !isNoTitle || outputLines > 1 {
+					fmt.Fprintln(w, "")
+				}
 			}
 
-			fmt.Fprintln(w, line)
+			if !isNoTitle || outputLines > 0 {
+				fmt.Fprintln(w, line)
+			}
+			outputLines++
 		}
 	}
 }
