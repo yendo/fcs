@@ -194,7 +194,7 @@ func TestDefaultNoteExists(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	if _, err := os.Stat(filepath.Join(home, defaultNotesFile)); err != nil {
+	if _, err = os.Stat(filepath.Join(home, defaultNotesFile)); err != nil {
 		t.Skipf("the default %s does not exist", defaultNotesFile)
 	}
 
