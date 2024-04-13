@@ -5,6 +5,8 @@ on:
     branches:
       - "*"
 
+permissions: {}
+
 jobs:
   build:
     name: Lint Code Base
