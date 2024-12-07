@@ -124,7 +124,7 @@ func isContentsEnd(line string) bool {
 	return strings.HasPrefix(strings.TrimLeft(line, "#"), " ")
 }
 
-// PrintsFirstURL writes the first URL in the contents of the note.
+// WriteFirstURL writes the first URL in the contents of the note.
 func WriteFirstURL(w io.Writer, r io.Reader, title string) {
 	var buf bytes.Buffer
 
