@@ -210,3 +210,18 @@ func TestRunWithLocationFlag(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("%q 5\n", testFileName), buf.String())
 	})
 }
+
+func TestRunWithBashScriptFlag(t *testing.T) {
+	setCommandLineFlag(t, "bash")
+	setOSArgs(t, []string{"fcqs-cli", "--bash"})
+	var buf bytes.Buffer
+
+	fileName := "../../shell.bash"
+	expectedData, err := os.ReadFile(fileName)
+	require.NoError(t, err)
+
+	err = run(&buf)
+
+	assert.NoError(t, err)
+	assert.Equal(t, string(expectedData), buf.String())
+}
