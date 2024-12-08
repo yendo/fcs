@@ -38,7 +38,7 @@ export VISUAL="vim"
 eval "$(fcqs-cli -b)"
 ```
 
-For VS code.
+For Visual Studio Code.
 
 ``` bash
 export FCQS_EDITOR="vscode"
@@ -68,7 +68,7 @@ The file can be changed by the environment variable `FCQS_NOTES_FILE`.
 
 ### Format
 
-The format of notes is similar to markdown.
+The format of notes is similar to Markdown.
 However, all you really need are the titles of each note in the heading
 and the content below it.
 

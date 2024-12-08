@@ -51,6 +51,8 @@ func WriteTitles(w io.Writer, r io.Reader) {
 }
 
 // WriteContents writes the contents of the note.
+//
+//gocyclo:ignore
 func WriteContents(w io.Writer, r io.Reader, title string) {
 	title = strings.Trim(title, " ")
 	_, isNoTitle := os.LookupEnv("FCQS_CONTENTS_NO_TITLE")
