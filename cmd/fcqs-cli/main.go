@@ -13,10 +13,11 @@ import (
 var (
 	version = "unknown"
 
-	showVersion = flag.Bool("v", false, "output the version")
-	showURL     = flag.Bool("u", false, "output the first URL from the note")
-	showCmd     = flag.Bool("c", false, "output the first command from the note")
-	showLoc     = flag.Bool("l", false, "output the note location")
+	showVersion  = flag.Bool("v", false, "output the version")
+	showURL      = flag.Bool("u", false, "output the first URL from the note")
+	showCmd      = flag.Bool("c", false, "output the first command from the note")
+	showLoc      = flag.Bool("l", false, "output the note location")
+	showBashComp = flag.Bool("b", false, "output bash completion")
 
 	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
 )
@@ -40,6 +41,11 @@ func run(w io.Writer) error {
 		return fmt.Errorf("cannot access notes file: %w", err)
 	}
 	defer file.Close()
+
+	if *showBashComp {
+		fcqs.WriteBashScript(w)
+		return nil
+	}
 
 	if *showURL || *showCmd || *showLoc {
 		if len(args) != 1 {

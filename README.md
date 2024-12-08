@@ -28,26 +28,36 @@ Copy the command `fcqs-cli` to a directory with a path.
 install fcqs-cli ~/.local/bin/
 ```
 
-Add the following function for fcqs to `~/.bashrc` for Linux, Bash and Vim users.
+Add the following function for fcqs to `~/.bashrc` For Bash & Unix users.
 You have to install xclip to copy the note to clip board.
-See [shell settings document](docs/shell_settings.md) for other cases.
+
+For Unix standard editor (Vim, Emacs, nano, gedit, etc.).
 
 ``` bash
 export VISUAL="vim"
-
-fcqs() {
-  local title=$(fcqs-cli | \
-    fzf --preview "fcqs-cli {}" \
-        --bind "ctrl-y:execute-silent(fcqs-cli {} | xclip -selection c),ctrl-o:execute-silent(fcqs-cli -u {} | xargs xdg-open),ctrl-e:execute-silent(fcqs-cli -l {} | awk '{printf \"+%s %s\n\",\$2,\$1}' | xargs -o $VISUAL > /dev/tty)+abort")
-  fcqs-cli "$title"
-  local command=$(fcqs-cli -c "$title")
-  READLINE_LINE="${READLINE_LINE:0:$READLINE_POINT}${command}${READLINE_LINE:$READLINE_POINT}"
-  READLINE_POINT=$(( READLINE_POINT + ${#command} ))
-}
-
-# You can customize the key binding
-bind -x '"\C-o":fcqs'
+eval "$(fcqs-cli -b)"
 ```
+
+For VS code.
+
+``` bash
+export FCQS_EDITOR="vscode"
+eval "$(fcqs-cli -b)"
+```
+
+You can customize default key bindings.
+
+``` bash
+export FCQS_COPY_KEY="ctrl-y"
+export FCQS_OPEN_KEY="ctrl-o"
+export FCQS_EDIT_KEY="ctrl-e"
+export FCQS_BASH_BIND_KEY="\C-o"
+```
+
+> [!NOTE]
+> `-b` option is only available in fcqs 0.3.0 or later.
+> If you have an older version of fcqs, or want more control,
+> you can use [shell.bash](shell.bash).
 
 ## Notes specification
 

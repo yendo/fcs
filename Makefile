@@ -1,7 +1,7 @@
 VERSION := $(shell git describe --tags --abbrev=0 | awk -F "." '{sub("v","", $$1); printf "%s.%s.%s\n",$$1,$$2,$$3+1}')
 
 BINARY=fcqs-cli
-GO_FILES=cmd/fcqs-cli/main.go fcqs.go go.mod go.sum
+GO_FILES=cmd/fcqs-cli/main.go fcqs.go shell.go shell.bash go.mod go.sum
 GOCOVERDIR=coverdir
 
 $(BINARY): $(GO_FILES)
