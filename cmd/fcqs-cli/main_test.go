@@ -2,11 +2,11 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"os"
 	"testing"
 
+	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/yendo/fcqs"
@@ -112,7 +112,7 @@ func TestRunFail(t *testing.T) {
 }
 
 func TestRunWithVersionFlag(t *testing.T) {
-	setCommandLineFlag(t, "v")
+	setCommandLineFlag(t, "version")
 	setOSArgs(t, []string{"fcqs-cli", "-v"})
 	var buf bytes.Buffer
 
@@ -124,7 +124,7 @@ func TestRunWithVersionFlag(t *testing.T) {
 
 func TestRunWithURLFlag(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
-	setCommandLineFlag(t, "u")
+	setCommandLineFlag(t, "url")
 
 	t.Run("with no args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-u"})
@@ -150,7 +150,7 @@ func TestRunWithURLFlag(t *testing.T) {
 
 func TestRunWithCmdFlag(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
-	setCommandLineFlag(t, "c")
+	setCommandLineFlag(t, "command")
 
 	t.Run("with no args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-c"})
@@ -187,7 +187,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 func TestRunWithLocationFlag(t *testing.T) {
 	testFileName := test.GetTestDataFullPath(test.TestLocationFile)
 	t.Setenv("FCQS_NOTES_FILE", testFileName)
-	setCommandLineFlag(t, "l")
+	setCommandLineFlag(t, "location")
 
 	t.Run("with no args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-l"})

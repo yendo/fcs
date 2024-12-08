@@ -219,7 +219,7 @@ func TestBashScript(t *testing.T) {
 	expected := string(data)
 
 	buf := &stdBuf{}
-	cmd := buf.newTestCmd("-b")
+	cmd := buf.newTestCmd("--bash")
 
 	// Act
 	err = cmd.Run()

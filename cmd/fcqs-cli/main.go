@@ -2,22 +2,22 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"os"
 
+	flag "github.com/spf13/pflag"
 	"github.com/yendo/fcqs"
 )
 
 var (
 	version = "unknown"
 
-	showVersion  = flag.Bool("v", false, "output the version")
-	showURL      = flag.Bool("u", false, "output the first URL from the note")
-	showCmd      = flag.Bool("c", false, "output the first command from the note")
-	showLoc      = flag.Bool("l", false, "output the note location")
-	showBashComp = flag.Bool("b", false, "output bash completion")
+	showVersion  = flag.BoolP("version", "v", false, "output the version")
+	showURL      = flag.BoolP("url", "u", false, "output the first URL from the note")
+	showCmd      = flag.BoolP("command", "c", false, "output the first command from the note")
+	showLoc      = flag.BoolP("location", "l", false, "output the note location")
+	showBashComp = flag.BoolP("bash", "", false, "output bash integration script")
 
 	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
 )
