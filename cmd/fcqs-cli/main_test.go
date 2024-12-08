@@ -111,17 +111,6 @@ func TestRunFail(t *testing.T) {
 	})
 }
 
-func TestRunWithVersionFlag(t *testing.T) {
-	setCommandLineFlag(t, "version")
-	setOSArgs(t, []string{"fcqs-cli", "-v"})
-	var buf bytes.Buffer
-
-	err := run(&buf)
-
-	assert.NoError(t, err)
-	assert.Equal(t, version+"\n", buf.String())
-}
-
 func TestRunWithURLFlag(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
 	setCommandLineFlag(t, "url")
@@ -209,6 +198,17 @@ func TestRunWithLocationFlag(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 5\n", testFileName), buf.String())
 	})
+}
+
+func TestRunWithVersionFlag(t *testing.T) {
+	setCommandLineFlag(t, "version")
+	setOSArgs(t, []string{"fcqs-cli", "-v"})
+	var buf bytes.Buffer
+
+	err := run(&buf)
+
+	assert.NoError(t, err)
+	assert.Equal(t, version+"\n", buf.String())
 }
 
 func TestRunWithBashScriptFlag(t *testing.T) {

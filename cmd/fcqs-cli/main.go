@@ -31,6 +31,11 @@ func run(w io.Writer) error {
 		return nil
 	}
 
+	if *showBash {
+		fcqs.WriteBashScript(w)
+		return nil
+	}
+
 	fileName, err := fcqs.GetNotesFileName()
 	if err != nil {
 		return fmt.Errorf("cannot get notes file name: %w", err)
@@ -41,11 +46,6 @@ func run(w io.Writer) error {
 		return fmt.Errorf("cannot access notes file: %w", err)
 	}
 	defer file.Close()
-
-	if *showBash {
-		fcqs.WriteBashScript(w)
-		return nil
-	}
 
 	if *showURL || *showCmd || *showLoc {
 		if len(args) != 1 {
