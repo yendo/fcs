@@ -28,21 +28,21 @@ Copy the command `fcqs-cli` to a directory with a path.
 install fcqs-cli ~/.local/bin/
 ```
 
-Add the following function for fcqs to `~/.bashrc` For Bash & Unix users.
+Add the following function for fcqs to `~/.bashrc` for Bash & Unix users.
 You have to install xclip to copy the note to clip board.
 
-For Unix standard editor (Vim, Emacs, nano, gedit, etc.).
+For Unix standard editor (Vim, Emacs, nano, gedit, etc.):
 
 ``` bash
 export VISUAL="vim"
-eval "$(fcqs-cli -b)"
+eval "$(fcqs-cli --bash)"
 ```
 
-For Visual Studio Code.
+For Visual Studio Code:
 
 ``` bash
 export FCQS_EDITOR="vscode"
-eval "$(fcqs-cli -b)"
+eval "$(fcqs-cli --bash)"
 ```
 
 You can customize default key bindings.
@@ -84,7 +84,7 @@ contents2
 
 ## Develop
 
-Build the command `fcqs-cli` with Go 1.21:
+Build the command `fcqs-cli`:
 
 ``` sh
 make
