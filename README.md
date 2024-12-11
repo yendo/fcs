@@ -29,7 +29,6 @@ install fcqs-cli ~/.local/bin/
 ```
 
 Add the following function for fcqs to `~/.bashrc` for Bash & Unix users.
-You have to install xclip to copy the note to clip board.
 
 For Unix standard editor (Vim, Emacs, nano, gedit, etc.):
 
@@ -45,13 +44,14 @@ export FCQS_EDITOR="vscode"
 eval "$(fcqs-cli --bash)"
 ```
 
-You can customize default key bindings.
+You can customize default key bindings and clipboard command.
 
 ``` bash
 export FCQS_COPY_KEY="ctrl-y"
 export FCQS_OPEN_KEY="ctrl-o"
 export FCQS_EDIT_KEY="ctrl-e"
 export FCQS_BASH_BIND_KEY="\C-o"
+export FCQS_CLIP_COMMAND="xclip -selection c"
 ```
 
 > [!NOTE]
