@@ -16,7 +16,7 @@ import (
 
 const DefaultNotesFile = "fcnotes.md"
 
-// State of text line
+// State of text line.
 const (
 	Normal = iota
 	Fenced
