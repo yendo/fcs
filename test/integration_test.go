@@ -72,8 +72,6 @@ func TestCmdSuccess(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
-
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
@@ -133,8 +131,6 @@ func TestCmdFail(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
-
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
@@ -189,14 +185,17 @@ func TestNotesNotExists(t *testing.T) {
 
 func TestDefaultNoteExists(t *testing.T) {
 	// Arrange
+	tempHome := t.TempDir()
+	t.Setenv("HOME", tempHome)
 	t.Setenv("FCQS_NOTES_FILE", "")
+
+	file := filepath.Join(tempHome, defaultNotesFile)
+	err := os.WriteFile(file, []byte("# title\ncontents\n"), 0644)
+	require.NoError(t, err)
 
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
-
-	if _, err = os.Stat(filepath.Join(home, defaultNotesFile)); err != nil {
-		t.Skipf("the default %s does not exist", defaultNotesFile)
-	}
+	require.Equal(t, file, filepath.Join(home, defaultNotesFile))
 
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd()
@@ -206,6 +205,7 @@ func TestDefaultNoteExists(t *testing.T) {
 
 	// Assert
 	assert.NoError(t, err)
+	assert.Equal(t, "title\n", buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }
 

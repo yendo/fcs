@@ -55,8 +55,6 @@ func TestWriteContents(t *testing.T) {
 		os.Unsetenv("FCQS_CONTENTS_NO_TITLE")
 
 		for _, tc := range tests {
-			tc := tc
-
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
 
@@ -75,8 +73,6 @@ func TestWriteContents(t *testing.T) {
 		t.Setenv("FCQS_CONTENTS_NO_TITLE", "1")
 
 		for _, tc := range tests {
-			tc := tc
-
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
 
@@ -110,7 +106,6 @@ func TestWriteNoContents(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
@@ -161,15 +156,13 @@ func TestWriteFirstCmdLine(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
-
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestShellBlockFile)
 
-			fcqs.WriteFirstCmdLine(&buf, file, tc.title)
+			fcqs.WriteFirstCmdLineBlock(&buf, file, tc.title)
 
 			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
 			assert.Equal(t, expected[tc.output], buf.String())

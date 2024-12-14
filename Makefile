@@ -1,8 +1,8 @@
 VERSION := $(shell git describe --tags --abbrev=0 | awk -F "." '{sub("v","", $$1); printf "%s.%s.%s\n",$$1,$$2,$$3+1}')
 
-BINARY=fcqs-cli
-GO_FILES=cmd/fcqs-cli/main.go fcqs.go shell.go shell.bash go.mod go.sum
-GOCOVERDIR=coverdir
+BINARY := fcqs-cli
+GO_FILES := $(shell find . -type f -name '*.go' ! -name '*test*') go.* shell.bash
+GOCOVERDIR := coverdir
 
 $(BINARY): $(GO_FILES)
 	go build -trimpath -ldflags "-s -w -X main.version=${VERSION}-snapshot" ./cmd/fcqs-cli/
