@@ -29,8 +29,6 @@ func TestFilterWriter(t *testing.T) {
 		{"# a\n\n\n\nb\n", "b\n", true},
 	}
 	for _, tc := range tests {
-		tc := tc
-
 		t.Run(tc.input, func(t *testing.T) {
 			t.Parallel()
 
