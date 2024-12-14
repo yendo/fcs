@@ -28,9 +28,6 @@ jobs:
           version: "2024.1.1"
           install-go: false
 
-      - name: Install dependencies
-        run: go get .
-
       - name: Build
         run: make
 
@@ -38,6 +35,4 @@ jobs:
         run: make unit-test-v
 
       - name: Integration Test
-        run: |
-          cp test/testdata/test_fcnotes.md "${HOME}/fcnotes.md"
-          make integration-test-v
+        run: make integration-test-v
