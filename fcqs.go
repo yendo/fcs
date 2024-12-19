@@ -147,8 +147,11 @@ func isSearchedTitleLine(line string, title string) bool {
 
 // WriteFirstURL writes the first URL in the contents of the note.
 func WriteFirstURL(w io.Writer, r io.Reader, title string) {
-	var buf bytes.Buffer
+	if isEmptyTrimmedTitle(title) {
+		return
+	}
 
+	var buf bytes.Buffer
 	WriteContents(&buf, r, title)
 
 	rxStrict := xurls.Strict()
@@ -161,10 +164,13 @@ func WriteFirstURL(w io.Writer, r io.Reader, title string) {
 
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
 func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title string) {
-	var buf bytes.Buffer
+	if isEmptyTrimmedTitle(title) {
+		return
+	}
 
 	state := Normal
 
+	var buf bytes.Buffer
 	WriteContents(&buf, r, title)
 	scanner := bufio.NewScanner(&buf)
 
@@ -206,6 +212,10 @@ func isShellCodeBlockBegin(line string) bool {
 
 // WriteNoteLocation writes the file name and line number of the note.
 func WriteNoteLocation(w io.Writer, file *os.File, title string) {
+	if isEmptyTrimmedTitle(title) {
+		return
+	}
+
 	c := 0
 	scanner := bufio.NewScanner(file)
 
@@ -234,4 +244,9 @@ func GetNotesFileName() (string, error) {
 
 	fileName = filepath.Join(home, DefaultNotesFile)
 	return fileName, nil
+}
+
+// isEmptyTrimmedTitle determines if trimmed tile is empty.
+func isEmptyTrimmedTitle(title string) bool {
+	return strings.Trim(title, " ") == ""
 }

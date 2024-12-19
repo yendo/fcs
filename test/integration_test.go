@@ -50,14 +50,29 @@ func TestCmdSuccess(t *testing.T) {
 			stdout:  "http://github.com/yendo/fcqs/\n",
 		},
 		{
+			title:   "with url flag and an empty arg",
+			options: []string{"-u", ""},
+			stdout:  "",
+		},
+		{
 			title:   "with cmd flag and an arg",
 			options: []string{"-c", "command-line"},
 			stdout:  "ls -l | nl\n",
 		},
 		{
+			title:   "with cmd flag and an empty arg",
+			options: []string{"-c", ""},
+			stdout:  "",
+		},
+		{
 			title:   "with location flag and an arg",
 			options: []string{"-l", "title"},
 			stdout:  fmt.Sprintf("%q 1\n", TestNotesFile),
+		},
+		{
+			title:   "with location flag and an empty arg",
+			options: []string{"-l", ""},
+			stdout:  "",
 		},
 		{
 			title:   "without args",

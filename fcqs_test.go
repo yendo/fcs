@@ -128,13 +128,21 @@ func TestWriteNoContents(t *testing.T) {
 
 func TestWriteFirstURL(t *testing.T) {
 	t.Parallel()
-
-	var buf bytes.Buffer
 	file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-	fcqs.WriteFirstURL(&buf, file, "URL")
+	t.Run("title is valid", func(t *testing.T) {
+		var buf bytes.Buffer
+		fcqs.WriteFirstURL(&buf, file, "URL")
 
-	assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
+		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
+	})
+
+	t.Run("title is empty", func(t *testing.T) {
+		var buf bytes.Buffer
+		fcqs.WriteFirstURL(&buf, file, "")
+
+		assert.Empty(t, buf.String())
+	})
 }
 
 func TestWriteFirstCmdLine(t *testing.T) {
@@ -160,6 +168,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		{"go", false},
 		{"no identifier", false},
 		{"other identifier", false},
+		{"", false},
 	}
 
 	for _, tc := range tests {
@@ -179,13 +188,21 @@ func TestWriteFirstCmdLine(t *testing.T) {
 
 func TestWriteNoteLocation(t *testing.T) {
 	t.Parallel()
-
-	var buf bytes.Buffer
-
 	testFile := test.OpenTestNotesFile(t, test.TestLocationFile)
-	fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
 
-	assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
+	t.Run("title is valid", func(t *testing.T) {
+		var buf bytes.Buffer
+		fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
+
+		assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
+	})
+
+	t.Run("title is empty", func(t *testing.T) {
+		var buf bytes.Buffer
+		fcqs.WriteNoteLocation(&buf, testFile, "")
+
+		assert.Empty(t, buf.String())
+	})
 }
 
 func TestGetFcqsFile(t *testing.T) {
