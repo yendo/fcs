@@ -31,6 +31,7 @@ func OpenTestNotesFile(t *testing.T, filename string) *os.File {
 	return file
 }
 
+// GetTestDataFullPath returns a full path of test note file.
 func GetTestDataFullPath(filename string) string {
 	_, thisFileName, _, _ := runtime.Caller(0)
 
