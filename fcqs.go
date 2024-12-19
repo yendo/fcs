@@ -61,6 +61,10 @@ func WriteTitles(w io.Writer, r io.Reader) {
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title string) {
 	title = strings.Trim(title, " ")
+	if title == "" {
+		return
+	}
+
 	state := Normal
 
 	_, isNoTitle := os.LookupEnv("FCQS_CONTENTS_NO_TITLE")

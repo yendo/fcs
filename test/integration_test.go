@@ -65,6 +65,16 @@ func TestCmdSuccess(t *testing.T) {
 			stdout:  GetExpectedTitles(),
 		},
 		{
+			title:   "with an empty arg",
+			options: []string{""},
+			stdout:  "",
+		},
+		{
+			title:   "with an arg of spaces",
+			options: []string{"  "},
+			stdout:  "",
+		},
+		{
 			title:   "with an arg",
 			options: []string{"There can be no blank line"},
 			stdout:  "# There can be no blank line\ncontents\n", // next line is only "#".

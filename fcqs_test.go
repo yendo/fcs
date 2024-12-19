@@ -42,7 +42,6 @@ func TestWriteContents(t *testing.T) {
 		{"#   Spaces before the title are ignored\n", "contents\n"},
 		{"# Headings in fenced code blocks are ignored\n", "```\n" + "# fenced heading\n" + "```\n"},
 		{"# There can be no blank line", "contents\n"},
-		{"#\n", "no title contents are combined into one.\n\n" + "#  \n\n" + "title is only spaces\n"},
 		{"# Titles without a space after the # are not recognized\n", "#no_space_title\n\n" + "contents\n\n" +
 			"  # Titles with spaces before the # are not recognized\n\n" + "contents\n"},
 		{"# URL\n", "fcqs: http://github.com/yendo/fcqs/\n" + "github: http://github.com/\n"},
@@ -95,6 +94,14 @@ func TestWriteNoContents(t *testing.T) {
 		desc  string
 		title string
 	}{
+		{
+			desc:  "Empty titles are recognized as title, but do not output the contents.",
+			title: "#",
+		},
+		{
+			desc:  "Titles only spaces are recognized as title, but do not output the contents.",
+			title: "#  ",
+		},
 		{
 			desc:  "Titles without a space after the `#` are not recognized as title",
 			title: "#no_space_title",
