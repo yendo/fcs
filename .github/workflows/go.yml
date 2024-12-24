@@ -36,3 +36,17 @@ jobs:
 
       - name: Integration Test
         run: make integration-test-v
+
+      - name: Upload Unit Test results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./cover-ut.out
+          flags: unit-test
+
+      - name: Upload Integration Test results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./cover-it.out
+          flags: integration-test
