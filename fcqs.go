@@ -25,7 +25,7 @@ const (
 )
 
 // WriteTitles writes the titles of all notes.
-func WriteTitles(w io.Writer, r io.Reader) {
+func WriteTitles(w io.Writer, r io.Reader) error {
 	var allTitles []string
 	var title string
 
@@ -56,13 +56,18 @@ func WriteTitles(w io.Writer, r io.Reader) {
 			}
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("seek titles: %w", err)
+	}
+
+	return nil
 }
 
 // WriteContents writes the contents of the note.
-func WriteContents(w io.Writer, r io.Reader, title string) {
+func WriteContents(w io.Writer, r io.Reader, title string) error {
 	title = strings.Trim(title, " ")
 	if title == "" {
-		return
+		return nil
 	}
 
 	state := Normal
@@ -109,8 +114,12 @@ func WriteContents(w io.Writer, r io.Reader, title string) {
 			f.Write(line)
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("seek contents: %w", err)
+	}
 
 	f.Write("")
+	return nil
 }
 
 // isTitleLine returns if the line is title line.
@@ -146,13 +155,15 @@ func isSearchedTitleLine(line string, title string) bool {
 }
 
 // WriteFirstURL writes the first URL in the contents of the note.
-func WriteFirstURL(w io.Writer, r io.Reader, title string) {
+func WriteFirstURL(w io.Writer, r io.Reader, title string) error {
 	if isEmptyTrimmedTitle(title) {
-		return
+		return nil
 	}
 
 	var buf bytes.Buffer
-	WriteContents(&buf, r, title)
+	if err := WriteContents(&buf, r, title); err != nil {
+		return err
+	}
 
 	rxStrict := xurls.Strict()
 	url := rxStrict.FindString(buf.String())
@@ -160,18 +171,22 @@ func WriteFirstURL(w io.Writer, r io.Reader, title string) {
 	if url != "" {
 		fmt.Fprintln(w, url)
 	}
+
+	return nil
 }
 
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
-func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title string) {
+func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title string) error {
 	if isEmptyTrimmedTitle(title) {
-		return
+		return nil
 	}
 
 	state := Normal
 
 	var buf bytes.Buffer
-	WriteContents(&buf, r, title)
+	if err := WriteContents(&buf, r, title); err != nil {
+		return err
+	}
 	scanner := bufio.NewScanner(&buf)
 
 	for scanner.Scan() {
@@ -190,6 +205,11 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title string) {
 			fmt.Fprintln(w, strings.TrimLeft(line, "$ "))
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("seek command line block: %w", err)
+	}
+
+	return nil
 }
 
 var reShellCodeBlock = regexp.MustCompile("^```+\\s*(\\S+).*$")
@@ -211,9 +231,9 @@ func isShellCodeBlockBegin(line string) bool {
 }
 
 // WriteNoteLocation writes the file name and line number of the note.
-func WriteNoteLocation(w io.Writer, file *os.File, title string) {
+func WriteNoteLocation(w io.Writer, file *os.File, title string) error {
 	if isEmptyTrimmedTitle(title) {
-		return
+		return nil
 	}
 
 	c := 0
@@ -228,6 +248,11 @@ func WriteNoteLocation(w io.Writer, file *os.File, title string) {
 			break
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("seek note location: %w", err)
+	}
+
+	return nil
 }
 
 // GetNotesFileName returns the filename of the notes.

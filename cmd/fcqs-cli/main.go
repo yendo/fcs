@@ -54,26 +54,26 @@ func run(w io.Writer) error {
 
 		switch {
 		case *showURL:
-			fcqs.WriteFirstURL(w, file, args[0])
+			err = fcqs.WriteFirstURL(w, file, args[0])
 		case *showCmd:
-			fcqs.WriteFirstCmdLineBlock(w, file, args[0])
+			err = fcqs.WriteFirstCmdLineBlock(w, file, args[0])
 		case *showLoc:
-			fcqs.WriteNoteLocation(w, file, args[0])
+			err = fcqs.WriteNoteLocation(w, file, args[0])
 		}
 
-		return nil
+		return err
 	}
 
 	switch len(args) {
 	case 0:
-		fcqs.WriteTitles(w, file)
+		err = fcqs.WriteTitles(w, file)
 	case 1:
-		fcqs.WriteContents(w, file, args[0])
+		err = fcqs.WriteContents(w, file, args[0])
 	default:
 		return ErrInvalidNumberOfArgs
 	}
 
-	return nil
+	return err
 }
 
 func main() {

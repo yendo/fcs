@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/yendo/fcqs"
 )
 
@@ -41,6 +42,9 @@ func TestFilterWriter(t *testing.T) {
 				line := scanner.Text()
 				f.Write(line)
 			}
+			err := scanner.Err()
+			require.NoError(t, err)
+
 			f.Write("")
 
 			assert.Equal(t, tc.output, Buf.String())
