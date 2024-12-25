@@ -56,7 +56,7 @@ export FCQS_NOTES_FILE="~/fcnotes.md"
 ```
 
 > [!NOTE]
-> `-b` option is only available in fcqs 0.3.0 or later.
+> `--bash` option is only available in fcqs 0.3.0 or later.
 > If you have an older version of fcqs, or want more control,
 > you can use [shell.bash](shell.bash).
 
