@@ -2,11 +2,13 @@ package fcqs_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"testing/iotest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,12 +19,26 @@ import (
 func TestWriteTitles(t *testing.T) {
 	t.Parallel()
 
-	var buf bytes.Buffer
+	t.Run("success to output titles", func(t *testing.T) {
+		file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-	file := test.OpenTestNotesFile(t, test.TestNotesFile)
-	fcqs.WriteTitles(&buf, file)
+		var buf bytes.Buffer
+		err := fcqs.WriteTitles(&buf, file)
 
-	assert.Equal(t, test.GetExpectedTitles(), buf.String())
+		assert.NoError(t, err)
+		assert.Equal(t, test.GetExpectedTitles(), buf.String())
+	})
+
+	t.Run("fail with scan error", func(t *testing.T) {
+		errStr := "scan error"
+		file := iotest.ErrReader(errors.New(errStr))
+
+		var buf bytes.Buffer
+		err := fcqs.WriteTitles(&buf, file)
+
+		assert.EqualError(t, err, fmt.Sprintf("seek titles: %s", errStr))
+		assert.Empty(t, buf.String())
+	})
 }
 
 func TestWriteContents(t *testing.T) {
@@ -61,8 +77,9 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
-				fcqs.WriteContents(&buf, file, title)
+				err := fcqs.WriteContents(&buf, file, title)
 
+				assert.NoError(t, err)
 				assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
 			})
 		}
@@ -79,8 +96,9 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
-				fcqs.WriteContents(&buf, file, title)
+				err := fcqs.WriteContents(&buf, file, title)
 
+				assert.NoError(t, err)
 				assert.Equal(t, tc.contents, buf.String())
 			})
 		}
@@ -119,11 +137,25 @@ func TestWriteNoContents(t *testing.T) {
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-			fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
+			err := fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
 
+			assert.NoError(t, err)
 			assert.Empty(t, buf.String())
 		})
 	}
+}
+
+func TestWriteContentsScanErr(t *testing.T) {
+	t.Parallel()
+
+	errStr := "scan error"
+	file := iotest.ErrReader(errors.New(errStr))
+
+	var buf bytes.Buffer
+	err := fcqs.WriteContents(&buf, file, "title")
+
+	assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+	assert.Empty(t, buf.String())
 }
 
 func TestWriteFirstURL(t *testing.T) {
@@ -132,15 +164,28 @@ func TestWriteFirstURL(t *testing.T) {
 
 	t.Run("title is valid", func(t *testing.T) {
 		var buf bytes.Buffer
-		fcqs.WriteFirstURL(&buf, file, "URL")
+		err := fcqs.WriteFirstURL(&buf, file, "URL")
 
+		assert.NoError(t, err)
 		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
 	})
 
 	t.Run("title is empty", func(t *testing.T) {
 		var buf bytes.Buffer
-		fcqs.WriteFirstURL(&buf, file, "")
+		err := fcqs.WriteFirstURL(&buf, file, "")
 
+		assert.NoError(t, err)
+		assert.Empty(t, buf.String())
+	})
+
+	t.Run("scan failed", func(t *testing.T) {
+		errStr := "scan error"
+		r := iotest.ErrReader(errors.New(errStr))
+
+		var buf bytes.Buffer
+		err := fcqs.WriteFirstURL(&buf, r, "title")
+
+		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -178,12 +223,24 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestShellBlockFile)
 
-			fcqs.WriteFirstCmdLineBlock(&buf, file, tc.title)
+			err := fcqs.WriteFirstCmdLineBlock(&buf, file, tc.title)
 
+			assert.NoError(t, err)
 			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
 			assert.Equal(t, expected[tc.output], buf.String())
 		})
 	}
+
+	t.Run("scan failed", func(t *testing.T) {
+		errStr := "scan error"
+		r := iotest.ErrReader(errors.New(errStr))
+
+		var buf bytes.Buffer
+		err := fcqs.WriteFirstCmdLineBlock(&buf, r, "title")
+
+		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		assert.Empty(t, buf.String())
+	})
 }
 
 func TestWriteNoteLocation(t *testing.T) {
@@ -192,15 +249,17 @@ func TestWriteNoteLocation(t *testing.T) {
 
 	t.Run("title is valid", func(t *testing.T) {
 		var buf bytes.Buffer
-		fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
+		err := fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
 
+		assert.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 	})
 
 	t.Run("title is empty", func(t *testing.T) {
 		var buf bytes.Buffer
-		fcqs.WriteNoteLocation(&buf, testFile, "")
+		err := fcqs.WriteNoteLocation(&buf, testFile, "")
 
+		assert.NoError(t, err)
 		assert.Empty(t, buf.String())
 	})
 }
