@@ -198,6 +198,8 @@ func TestRunWithLocationFlag(t *testing.T) {
 }
 
 func TestRunWithVersionFlag(t *testing.T) {
+	t.Parallel()
+
 	setCommandLineFlag(t, "version")
 	setOSArgs(t, []string{"fcqs-cli", "-v"})
 	var buf bytes.Buffer

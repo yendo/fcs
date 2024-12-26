@@ -20,6 +20,8 @@ func TestWriteTitles(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success to output titles", func(t *testing.T) {
+		t.Parallel()
+
 		file := test.OpenTestNotesFile(t, test.NotesFile)
 
 		var buf bytes.Buffer
@@ -30,6 +32,8 @@ func TestWriteTitles(t *testing.T) {
 	})
 
 	t.Run("fail with scan error", func(t *testing.T) {
+		t.Parallel()
+
 		errStr := "scan error"
 		file := iotest.ErrReader(errors.New(errStr))
 
@@ -42,6 +46,8 @@ func TestWriteTitles(t *testing.T) {
 }
 
 func TestWriteContents(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		title    string
 		contents string
@@ -66,6 +72,8 @@ func TestWriteContents(t *testing.T) {
 	}
 
 	t.Run("contents with title", func(t *testing.T) {
+		t.Parallel()
+
 		for _, tc := range tests {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
@@ -83,6 +91,8 @@ func TestWriteContents(t *testing.T) {
 	})
 
 	t.Run("contents without title", func(t *testing.T) {
+		t.Parallel()
+
 		for _, tc := range tests {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
@@ -150,7 +160,6 @@ func TestWriteNoContents(t *testing.T) {
 
 		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
-
 	})
 }
 
@@ -159,6 +168,8 @@ func TestWriteFirstURL(t *testing.T) {
 	file := test.OpenTestNotesFile(t, test.NotesFile)
 
 	t.Run("title is valid", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
 		err := fcqs.WriteFirstURL(&buf, file, "URL")
 
@@ -167,6 +178,8 @@ func TestWriteFirstURL(t *testing.T) {
 	})
 
 	t.Run("title is empty", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
 		err := fcqs.WriteFirstURL(&buf, file, "")
 
@@ -175,6 +188,8 @@ func TestWriteFirstURL(t *testing.T) {
 	})
 
 	t.Run("scan failed", func(t *testing.T) {
+		t.Parallel()
+
 		errStr := "scan error"
 		r := iotest.ErrReader(errors.New(errStr))
 
@@ -228,6 +243,8 @@ func TestWriteFirstCmdLine(t *testing.T) {
 	}
 
 	t.Run("scan failed", func(t *testing.T) {
+		t.Parallel()
+
 		errStr := "scan error"
 		r := iotest.ErrReader(errors.New(errStr))
 
@@ -244,6 +261,8 @@ func TestWriteNoteLocation(t *testing.T) {
 	testFile := test.OpenTestNotesFile(t, test.LocationFile)
 
 	t.Run("title is valid", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
 		err := fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
 
@@ -252,6 +271,8 @@ func TestWriteNoteLocation(t *testing.T) {
 	})
 
 	t.Run("title is empty", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
 		err := fcqs.WriteNoteLocation(&buf, testFile, "")
 

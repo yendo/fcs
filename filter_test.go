@@ -12,6 +12,8 @@ import (
 )
 
 func TestFilterWriter(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input        string
 		output       string
