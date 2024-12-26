@@ -20,13 +20,13 @@ func TestWriteTitles(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success to output titles", func(t *testing.T) {
-		file := test.OpenTestNotesFile(t, test.TestNotesFile)
+		file := test.OpenTestNotesFile(t, test.NotesFile)
 
 		var buf bytes.Buffer
 		err := fcqs.WriteTitles(&buf, file)
 
 		assert.NoError(t, err)
-		assert.Equal(t, test.GetExpectedTitles(), buf.String())
+		assert.Equal(t, test.ExpectedTitles(), buf.String())
 	})
 
 	t.Run("fail with scan error", func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestWriteContents(t *testing.T) {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
 
-				file := test.OpenTestNotesFile(t, test.TestNotesFile)
+				file := test.OpenTestNotesFile(t, test.NotesFile)
 				var buf bytes.Buffer
 				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
@@ -87,7 +87,7 @@ func TestWriteContents(t *testing.T) {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
 
-				file := test.OpenTestNotesFile(t, test.TestNotesFile)
+				file := test.OpenTestNotesFile(t, test.NotesFile)
 				var buf bytes.Buffer
 				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
@@ -130,7 +130,7 @@ func TestWriteNoContents(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
-			file := test.OpenTestNotesFile(t, test.TestNotesFile)
+			file := test.OpenTestNotesFile(t, test.NotesFile)
 
 			err := fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"), false)
 
@@ -156,7 +156,7 @@ func TestWriteNoContents(t *testing.T) {
 
 func TestWriteFirstURL(t *testing.T) {
 	t.Parallel()
-	file := test.OpenTestNotesFile(t, test.TestNotesFile)
+	file := test.OpenTestNotesFile(t, test.NotesFile)
 
 	t.Run("title is valid", func(t *testing.T) {
 		var buf bytes.Buffer
@@ -217,7 +217,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
-			file := test.OpenTestNotesFile(t, test.TestShellBlockFile)
+			file := test.OpenTestNotesFile(t, test.ShellBlockFile)
 
 			err := fcqs.WriteFirstCmdLineBlock(&buf, file, tc.title)
 
@@ -241,7 +241,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 
 func TestWriteNoteLocation(t *testing.T) {
 	t.Parallel()
-	testFile := test.OpenTestNotesFile(t, test.TestLocationFile)
+	testFile := test.OpenTestNotesFile(t, test.LocationFile)
 
 	t.Run("title is valid", func(t *testing.T) {
 		var buf bytes.Buffer
@@ -260,12 +260,12 @@ func TestWriteNoteLocation(t *testing.T) {
 	})
 }
 
-func TestGetFcqsFile(t *testing.T) {
+func TestNotesFileName(t *testing.T) {
 	t.Run("cannot access user home directory", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 
-		fileName, err := fcqs.GetNotesFileName()
+		fileName, err := fcqs.NotesFileName()
 
 		assert.Empty(t, fileName)
 		assert.Error(t, err)
@@ -276,7 +276,7 @@ func TestGetFcqsFile(t *testing.T) {
 		expectedFileName := "test_file_from_env.md"
 		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
 
-		fileName, err := fcqs.GetNotesFileName()
+		fileName, err := fcqs.NotesFileName()
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileName, fileName)
@@ -287,7 +287,7 @@ func TestGetFcqsFile(t *testing.T) {
 		home, err := os.UserHomeDir()
 		require.NoError(t, err)
 
-		filename, err := fcqs.GetNotesFileName()
+		filename, err := fcqs.NotesFileName()
 
 		assert.NoError(t, err)
 		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), filename)

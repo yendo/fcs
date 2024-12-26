@@ -37,7 +37,7 @@ func setOSArgs(t *testing.T, args []string) {
 }
 
 func TestRunSuccess(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.NotesFile))
 
 	t.Run("without args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli"})
@@ -46,7 +46,7 @@ func TestRunSuccess(t *testing.T) {
 		err := run(&buf)
 
 		assert.NoError(t, err)
-		assert.Equal(t, test.GetExpectedTitles(), buf.String())
+		assert.Equal(t, test.ExpectedTitles(), buf.String())
 	})
 
 	t.Run("with an arg", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestRunFail(t *testing.T) {
 	})
 
 	t.Run("with two args", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+		t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.NotesFile))
 		setOSArgs(t, []string{"fcqs-cli", "title", "other"})
 		var buf bytes.Buffer
 
@@ -109,7 +109,7 @@ func TestRunFail(t *testing.T) {
 }
 
 func TestRunWithURLFlag(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.NotesFile))
 	setCommandLineFlag(t, "url")
 
 	t.Run("with no args", func(t *testing.T) {
@@ -135,7 +135,7 @@ func TestRunWithURLFlag(t *testing.T) {
 }
 
 func TestRunWithCmdFlag(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", test.GetTestDataFullPath(test.TestNotesFile))
+	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.NotesFile))
 	setCommandLineFlag(t, "command")
 
 	t.Run("with no args", func(t *testing.T) {
@@ -171,7 +171,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 }
 
 func TestRunWithLocationFlag(t *testing.T) {
-	testFileName := test.GetTestDataFullPath(test.TestLocationFile)
+	testFileName := test.FullPath(test.LocationFile)
 	t.Setenv("FCQS_NOTES_FILE", testFileName)
 	setCommandLineFlag(t, "location")
 

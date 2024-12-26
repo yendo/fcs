@@ -254,8 +254,8 @@ func WriteNoteLocation(w io.Writer, file *os.File, title string) error {
 	return nil
 }
 
-// GetNotesFileName returns the filename of the notes.
-func GetNotesFileName() (string, error) {
+// NotesFileName returns the filename of the notes.
+func NotesFileName() (string, error) {
 	fileName := os.Getenv("FCQS_NOTES_FILE")
 	if fileName != "" {
 		return fileName, nil

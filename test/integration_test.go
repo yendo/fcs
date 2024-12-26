@@ -30,7 +30,7 @@ func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 }
 
 func TestCmdSuccess(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", NotesFile)
 
 	tests := []struct {
 		title   string
@@ -65,7 +65,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "with location flag and an arg",
 			options: []string{"-l", "title"},
-			stdout:  fmt.Sprintf("%q 1\n", TestNotesFile),
+			stdout:  fmt.Sprintf("%q 1\n", NotesFile),
 		},
 		{
 			title:   "with location flag and an empty arg",
@@ -75,7 +75,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "without args",
 			options: []string{},
-			stdout:  GetExpectedTitles(),
+			stdout:  ExpectedTitles(),
 		},
 		{
 			title:   "with an empty arg",
@@ -111,7 +111,7 @@ func TestCmdSuccess(t *testing.T) {
 }
 
 func TestCmdWriteContentsWithoutTitle(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", NotesFile)
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd("-t", "There can be no blank line")
 
@@ -123,7 +123,7 @@ func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 }
 
 func TestCmdFail(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", NotesFile)
 
 	tests := []struct {
 		title   string
@@ -169,14 +169,14 @@ func TestCmdFail(t *testing.T) {
 }
 
 func TestCmdNotesLocation(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestLocationFile)
+	t.Setenv("FCQS_NOTES_FILE", LocationFile)
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd("-l", "5th Line")
 
 	err := cmd.Run()
 
 	assert.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf("%q 5\n", TestLocationFile), buf.stdout.String())
+	assert.Equal(t, fmt.Sprintf("%q 5\n", LocationFile), buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }
 

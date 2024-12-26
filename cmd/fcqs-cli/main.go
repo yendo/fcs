@@ -37,7 +37,7 @@ func run(w io.Writer) error {
 		return nil
 	}
 
-	fileName, err := fcqs.GetNotesFileName()
+	fileName, err := fcqs.NotesFileName()
 	if err != nil {
 		return fmt.Errorf("cannot get notes file name: %w", err)
 	}
