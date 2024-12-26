@@ -71,7 +71,7 @@ func TestRunSuccess(t *testing.T) {
 }
 
 func TestRunFail(t *testing.T) {
-	t.Run("cannot access UserHomeDir", func(t *testing.T) {
+	t.Run("failed to access UserHomeDir", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 
@@ -79,11 +79,11 @@ func TestRunFail(t *testing.T) {
 		err := run(&buf)
 
 		assert.Error(t, err)
-		assert.EqualError(t, err, "cannot get notes file name: cannot access user home directory: $HOME is not defined")
+		assert.EqualError(t, err, "notes file name: user home directory: $HOME is not defined")
 		assert.Empty(t, buf.String())
 	})
 
-	t.Run("cannot access notes file", func(t *testing.T) {
+	t.Run("failed to access notes file", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "no_exits")
 
@@ -91,7 +91,7 @@ func TestRunFail(t *testing.T) {
 		err := run(&buf)
 
 		assert.Error(t, err)
-		assert.EqualError(t, err, fmt.Sprintf("cannot access notes file: open no_exits/%s: no such file or directory", fcqs.DefaultNotesFile))
+		assert.EqualError(t, err, fmt.Sprintf("notes file: open no_exits/%s: no such file or directory", fcqs.DefaultNotesFile))
 		assert.Empty(t, buf.String())
 	})
 

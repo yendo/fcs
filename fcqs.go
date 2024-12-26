@@ -263,7 +263,7 @@ func NotesFileName() (string, error) {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("cannot access user home directory: %w", err)
+		return "", fmt.Errorf("user home directory: %w", err)
 	}
 
 	fileName = filepath.Join(home, DefaultNotesFile)

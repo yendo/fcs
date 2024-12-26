@@ -39,12 +39,12 @@ func run(w io.Writer) error {
 
 	fileName, err := fcqs.NotesFileName()
 	if err != nil {
-		return fmt.Errorf("cannot get notes file name: %w", err)
+		return fmt.Errorf("notes file name: %w", err)
 	}
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		return fmt.Errorf("cannot access notes file: %w", err)
+		return fmt.Errorf("notes file: %w", err)
 	}
 	defer file.Close()
 

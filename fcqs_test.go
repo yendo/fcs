@@ -282,7 +282,7 @@ func TestWriteNoteLocation(t *testing.T) {
 }
 
 func TestNotesFileName(t *testing.T) {
-	t.Run("cannot access user home directory", func(t *testing.T) {
+	t.Run("failed to access user home directory", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
 
@@ -290,7 +290,7 @@ func TestNotesFileName(t *testing.T) {
 
 		assert.Empty(t, fileName)
 		assert.Error(t, err)
-		assert.EqualError(t, err, "cannot access user home directory: $HOME is not defined")
+		assert.EqualError(t, err, "user home directory: $HOME is not defined")
 	})
 
 	t.Run("set from environment variable", func(t *testing.T) {
