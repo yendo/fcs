@@ -138,19 +138,20 @@ func TestWriteNoContents(t *testing.T) {
 			assert.Empty(t, buf.String())
 		})
 	}
-}
 
-func TestWriteContentsScanErr(t *testing.T) {
-	t.Parallel()
+	t.Run("scan error", func(t *testing.T) {
+		t.Parallel()
 
-	errStr := "scan error"
-	file := iotest.ErrReader(errors.New(errStr))
+		errStr := "scan error"
+		file := iotest.ErrReader(errors.New(errStr))
 
-	var buf bytes.Buffer
-	err := fcqs.WriteContents(&buf, file, "title", false)
+		var buf bytes.Buffer
+		err := fcqs.WriteContents(&buf, file, "title", false)
 
-	assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
-	assert.Empty(t, buf.String())
+		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		assert.Empty(t, buf.String())
+
+	})
 }
 
 func TestWriteFirstURL(t *testing.T) {
