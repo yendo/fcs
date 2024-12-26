@@ -212,7 +212,7 @@ func TestDefaultNoteExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "")
 
 	file := filepath.Join(tempHome, defaultNotesFile)
-	err := os.WriteFile(file, []byte("# title\ncontents\n"), 0644)
+	err := os.WriteFile(file, []byte("# title\ncontents\n"), 0o600)
 	require.NoError(t, err)
 
 	home, err := os.UserHomeDir()
