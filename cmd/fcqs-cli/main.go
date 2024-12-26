@@ -18,6 +18,7 @@ var (
 	showCmd     = flag.BoolP("command", "c", false, "output the first command from the note")
 	showLoc     = flag.BoolP("location", "l", false, "output the note location")
 	showBash    = flag.BoolP("bash", "", false, "output bash integration script")
+	noTitle     = flag.BoolP("notitle", "t", false, "no title on output content")
 
 	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
 )
@@ -68,7 +69,7 @@ func run(w io.Writer) error {
 	case 0:
 		err = fcqs.WriteTitles(w, file)
 	case 1:
-		err = fcqs.WriteContents(w, file, args[0])
+		err = fcqs.WriteContents(w, file, args[0], *noTitle)
 	default:
 		return ErrInvalidNumberOfArgs
 	}

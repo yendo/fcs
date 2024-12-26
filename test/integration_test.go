@@ -30,8 +30,6 @@ func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 }
 
 func TestCmdSuccess(t *testing.T) {
-	t.Setenv("FCQS_CONTENTS_NO_TITLE", "")
-	os.Unsetenv("FCQS_CONTENTS_NO_TITLE")
 	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
 
 	tests := []struct {
@@ -114,9 +112,8 @@ func TestCmdSuccess(t *testing.T) {
 
 func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
-	t.Setenv("FCQS_CONTENTS_NO_TITLE", "1")
 	buf := &stdBuf{}
-	cmd := buf.newTestCmd("There can be no blank line")
+	cmd := buf.newTestCmd("-t", "There can be no blank line")
 
 	err := cmd.Run()
 

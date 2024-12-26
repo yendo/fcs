@@ -66,9 +66,6 @@ func TestWriteContents(t *testing.T) {
 	}
 
 	t.Run("contents with title", func(t *testing.T) {
-		t.Setenv("FCQS_CONTENTS_NO_TITLE", "")
-		os.Unsetenv("FCQS_CONTENTS_NO_TITLE")
-
 		for _, tc := range tests {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
@@ -77,7 +74,7 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
-				err := fcqs.WriteContents(&buf, file, title)
+				err := fcqs.WriteContents(&buf, file, title, false)
 
 				assert.NoError(t, err)
 				assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
@@ -86,8 +83,6 @@ func TestWriteContents(t *testing.T) {
 	})
 
 	t.Run("contents without title", func(t *testing.T) {
-		t.Setenv("FCQS_CONTENTS_NO_TITLE", "1")
-
 		for _, tc := range tests {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
@@ -96,7 +91,7 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 
-				err := fcqs.WriteContents(&buf, file, title)
+				err := fcqs.WriteContents(&buf, file, title, true)
 
 				assert.NoError(t, err)
 				assert.Equal(t, tc.contents, buf.String())
@@ -137,7 +132,7 @@ func TestWriteNoContents(t *testing.T) {
 			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.TestNotesFile)
 
-			err := fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"))
+			err := fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"), false)
 
 			assert.NoError(t, err)
 			assert.Empty(t, buf.String())
@@ -152,7 +147,7 @@ func TestWriteContentsScanErr(t *testing.T) {
 	file := iotest.ErrReader(errors.New(errStr))
 
 	var buf bytes.Buffer
-	err := fcqs.WriteContents(&buf, file, "title")
+	err := fcqs.WriteContents(&buf, file, "title", false)
 
 	assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 	assert.Empty(t, buf.String())

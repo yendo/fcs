@@ -50,8 +50,6 @@ func TestRunSuccess(t *testing.T) {
 	})
 
 	t.Run("with an arg", func(t *testing.T) {
-		t.Setenv("FCQS_CONTENTS_NO_TITLE", "")
-		os.Unsetenv("FCQS_CONTENTS_NO_TITLE")
 		setOSArgs(t, []string{"fcqs-cli", "title"})
 		var buf bytes.Buffer
 
@@ -62,8 +60,7 @@ func TestRunSuccess(t *testing.T) {
 	})
 
 	t.Run("with an arg and no_title option", func(t *testing.T) {
-		t.Setenv("FCQS_CONTENTS_NO_TITLE", "1")
-		setOSArgs(t, []string{"fcqs-cli", "title"})
+		setOSArgs(t, []string{"fcqs-cli", "-t", "title"})
 		var buf bytes.Buffer
 
 		err := run(&buf)

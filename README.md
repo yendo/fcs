@@ -52,6 +52,7 @@ export FCQS_OPEN_KEY="ctrl-o"
 export FCQS_EDIT_KEY="ctrl-e"
 export FCQS_BASH_BIND_KEY="\C-o"
 export FCQS_COPY_COMMAND="xclip -selection c"
+export FCQS_COPY_WITH_TITLE=true
 export FCQS_OPEN_COMMAND="open"
 export FCQS_NOTES_FILE="~/fcnotes.md"
 ```
