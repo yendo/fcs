@@ -41,8 +41,8 @@ func TestRunSuccess(t *testing.T) {
 
 	t.Run("without args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -51,8 +51,8 @@ func TestRunSuccess(t *testing.T) {
 
 	t.Run("with an arg", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "title"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -61,8 +61,8 @@ func TestRunSuccess(t *testing.T) {
 
 	t.Run("with an arg and no_title option", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-t", "title"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -74,8 +74,8 @@ func TestRunFail(t *testing.T) {
 	t.Run("cannot access UserHomeDir", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "")
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -86,8 +86,8 @@ func TestRunFail(t *testing.T) {
 	t.Run("cannot access notes file", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
 		t.Setenv("HOME", "no_exits")
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -98,8 +98,8 @@ func TestRunFail(t *testing.T) {
 	t.Run("with two args", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.NotesFile))
 		setOSArgs(t, []string{"fcqs-cli", "title", "other"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -114,8 +114,8 @@ func TestRunWithURLFlag(t *testing.T) {
 
 	t.Run("with no args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-u"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -125,8 +125,8 @@ func TestRunWithURLFlag(t *testing.T) {
 
 	t.Run("with a arg", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-u", "URL"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -140,8 +140,8 @@ func TestRunWithCmdFlag(t *testing.T) {
 
 	t.Run("with no args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-c"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -151,8 +151,8 @@ func TestRunWithCmdFlag(t *testing.T) {
 
 	t.Run("with a arg", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-c", "command-line"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -161,8 +161,8 @@ func TestRunWithCmdFlag(t *testing.T) {
 
 	t.Run("with a arg has $", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-c", "command-line with $"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -177,8 +177,8 @@ func TestRunWithLocationFlag(t *testing.T) {
 
 	t.Run("with no args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-l"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.Error(t, err)
@@ -188,8 +188,8 @@ func TestRunWithLocationFlag(t *testing.T) {
 
 	t.Run("with a arg", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-l", "5th Line"})
-		var buf bytes.Buffer
 
+		var buf bytes.Buffer
 		err := run(&buf)
 
 		assert.NoError(t, err)
@@ -202,8 +202,8 @@ func TestRunWithVersionFlag(t *testing.T) {
 
 	setCommandLineFlag(t, "version")
 	setOSArgs(t, []string{"fcqs-cli", "-v"})
-	var buf bytes.Buffer
 
+	var buf bytes.Buffer
 	err := run(&buf)
 
 	assert.NoError(t, err)
@@ -213,12 +213,12 @@ func TestRunWithVersionFlag(t *testing.T) {
 func TestRunWithBashScriptFlag(t *testing.T) {
 	setCommandLineFlag(t, "bash")
 	setOSArgs(t, []string{"fcqs-cli", "--bash"})
-	var buf bytes.Buffer
 
 	fileName := "../../shell.bash"
 	expectedData, err := os.ReadFile(fileName)
 	require.NoError(t, err)
 
+	var buf bytes.Buffer
 	err = run(&buf)
 
 	assert.NoError(t, err)

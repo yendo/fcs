@@ -35,8 +35,8 @@ func TestFilterWriter(t *testing.T) {
 		t.Run(tc.input, func(t *testing.T) {
 			t.Parallel()
 
-			var Buf bytes.Buffer
-			f := fcqs.NewFilter(&Buf, tc.isRemoveHead)
+			var buf bytes.Buffer
+			f := fcqs.NewFilter(&buf, tc.isRemoveHead)
 
 			file := strings.NewReader(tc.input)
 			scanner := bufio.NewScanner(file)
@@ -49,7 +49,7 @@ func TestFilterWriter(t *testing.T) {
 
 			f.Write("")
 
-			assert.Equal(t, tc.output, Buf.String())
+			assert.Equal(t, tc.output, buf.String())
 		})
 	}
 }
