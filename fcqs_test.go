@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -258,15 +259,40 @@ func TestWriteFirstCmdLine(t *testing.T) {
 func TestWriteNoteLocation(t *testing.T) {
 	t.Parallel()
 
-	testFile := test.OpenTestNotesFile(t, test.LocationFile)
-	title, err := value.NewTitle("5th Line")
-	require.NoError(t, err)
+	t.Run("single file", func(t *testing.T) {
+		t.Parallel()
 
-	var buf bytes.Buffer
-	err = fcqs.WriteNoteLocation(&buf, testFile, title)
+		var testFiles []*os.File
+		testFile := test.OpenTestNotesFile(t, test.LocationFile)
+		testFiles = append(testFiles, testFile)
 
-	assert.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
+		title, err := value.NewTitle("5th Line")
+		require.NoError(t, err)
+
+		var buf bytes.Buffer
+		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
+
+		assert.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
+	})
+
+	t.Run("multi files", func(t *testing.T) {
+		t.Parallel()
+
+		var testFiles []*os.File
+		testFile1 := test.OpenTestNotesFile(t, test.LocationFile)
+		testFile2 := test.OpenTestNotesFile(t, test.LocationExtraFile)
+		testFiles = append(testFiles, testFile1, testFile2)
+
+		title, err := value.NewTitle("9th Line")
+		require.NoError(t, err)
+
+		var buf bytes.Buffer
+		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
+
+		assert.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
+	})
 }
 
 func TestNotesFileName(t *testing.T) {
@@ -281,14 +307,29 @@ func TestNotesFileName(t *testing.T) {
 		assert.EqualError(t, err, "user home directory: $HOME is not defined")
 	})
 
-	t.Run("set from environment variable", func(t *testing.T) {
+	t.Run("set a file from environment variable", func(t *testing.T) {
 		expectedFileName := "test_file_from_env.md"
 		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
 
 		fileName, err := fcqs.NotesFileName()
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedFileName, fileName)
+		assert.Equal(t, expectedFileName, fileName[0])
+	})
+
+	t.Run("set files from environment variable", func(t *testing.T) {
+		expectedFileNames := []string{"test_file_1.md", "test_file_2.md", "test_file_3.md"}
+		sep := ":"
+		if runtime.GOOS == "windows" {
+			sep = ";"
+		}
+
+		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, sep))
+
+		fileName, err := fcqs.NotesFileName()
+
+		assert.NoError(t, err)
+		assert.ElementsMatch(t, expectedFileNames, fileName)
 	})
 
 	t.Run("default filename", func(t *testing.T) {
@@ -299,6 +340,6 @@ func TestNotesFileName(t *testing.T) {
 		filename, err := fcqs.NotesFileName()
 
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), filename)
+		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), filename[0])
 	})
 }

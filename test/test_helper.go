@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	NotesFile      = "testdata/test_fcnotes.md"
-	ShellBlockFile = "testdata/test_shellblock.md"
-	LocationFile   = "testdata/test_location.md"
+	NotesFile         = "testdata/test_fcnotes.md"
+	ShellBlockFile    = "testdata/test_shellblock.md"
+	LocationFile      = "testdata/test_location.md"
+	LocationExtraFile = "testdata/test_location_extra.md"
 )
 
 // OpenTestNotesFile opens a test notes file.

@@ -180,6 +180,56 @@ func TestCmdNotesLocation(t *testing.T) {
 	assert.Empty(t, buf.stderr.String())
 }
 
+func TestCmdMultiFiles(t *testing.T) {
+	t.Setenv("FCQS_NOTES_FILE", LocationFile+":"+LocationExtraFile)
+
+	t.Run("show titles", func(t *testing.T) {
+		buf := &stdBuf{}
+		cmd := buf.newTestCmd()
+
+		err := cmd.Run()
+
+		assert.NoError(t, err)
+		assert.Equal(t, "location test data\n5th Line\nother 5th Line\n9th Line\n", buf.stdout.String())
+		assert.Empty(t, buf.stderr.String())
+	})
+
+	t.Run("show contents", func(t *testing.T) {
+		buf := &stdBuf{}
+		cmd := buf.newTestCmd("9th Line")
+
+		err := cmd.Run()
+
+		assert.NoError(t, err)
+		assert.Equal(t, "# 9th Line\n\nDo not chang the 9th line.\n", buf.stdout.String())
+		assert.Empty(t, buf.stderr.String())
+	})
+
+	t.Run("show location", func(t *testing.T) {
+		buf := &stdBuf{}
+		cmd := buf.newTestCmd("-l", "9th Line")
+
+		err := cmd.Run()
+
+		assert.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("%q 9\n", LocationExtraFile), buf.stdout.String())
+		assert.Empty(t, buf.stderr.String())
+	})
+
+	t.Run("file error", func(t *testing.T) {
+		t.Setenv("FCQS_NOTES_FILE", FullPath(LocationFile)+":"+"invalid_file")
+
+		buf := &stdBuf{}
+		cmd := buf.newTestCmd()
+
+		err := cmd.Run()
+
+		assert.Error(t, err)
+		assert.Equal(t, "notes file: open invalid_file: no such file or directory\n", buf.stderr.String())
+		assert.Empty(t, buf.stdout.String())
+	})
+}
+
 func TestUserHomeDirNotExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "")
 	t.Setenv("HOME", "")
