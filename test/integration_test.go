@@ -30,9 +30,7 @@ func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
 }
 
 func TestCmdSuccess(t *testing.T) {
-	t.Setenv("FCQS_CONTENTS_NO_TITLE", "")
-	os.Unsetenv("FCQS_CONTENTS_NO_TITLE")
-	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", NotesFile)
 
 	tests := []struct {
 		title   string
@@ -67,7 +65,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "with location flag and an arg",
 			options: []string{"-l", "title"},
-			stdout:  fmt.Sprintf("%q 1\n", TestNotesFile),
+			stdout:  fmt.Sprintf("%q 1\n", NotesFile),
 		},
 		{
 			title:   "with location flag and an empty arg",
@@ -77,7 +75,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "without args",
 			options: []string{},
-			stdout:  GetExpectedTitles(),
+			stdout:  ExpectedTitles(),
 		},
 		{
 			title:   "with an empty arg",
@@ -113,10 +111,9 @@ func TestCmdSuccess(t *testing.T) {
 }
 
 func TestCmdWriteContentsWithoutTitle(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
-	t.Setenv("FCQS_CONTENTS_NO_TITLE", "1")
+	t.Setenv("FCQS_NOTES_FILE", NotesFile)
 	buf := &stdBuf{}
-	cmd := buf.newTestCmd("There can be no blank line")
+	cmd := buf.newTestCmd("-t", "There can be no blank line")
 
 	err := cmd.Run()
 
@@ -126,7 +123,7 @@ func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 }
 
 func TestCmdFail(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestNotesFile)
+	t.Setenv("FCQS_NOTES_FILE", NotesFile)
 
 	tests := []struct {
 		title   string
@@ -172,14 +169,14 @@ func TestCmdFail(t *testing.T) {
 }
 
 func TestCmdNotesLocation(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", TestLocationFile)
+	t.Setenv("FCQS_NOTES_FILE", LocationFile)
 	buf := &stdBuf{}
 	cmd := buf.newTestCmd("-l", "5th Line")
 
 	err := cmd.Run()
 
 	assert.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf("%q 5\n", TestLocationFile), buf.stdout.String())
+	assert.Equal(t, fmt.Sprintf("%q 5\n", LocationFile), buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }
 
@@ -193,7 +190,7 @@ func TestUserHomeDirNotExists(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "cannot get notes file name: cannot access user home directory: $HOME is not defined\n", buf.stderr.String())
+	assert.Equal(t, "notes file name: user home directory: $HOME is not defined\n", buf.stderr.String())
 }
 
 func TestNotesNotExists(t *testing.T) {
@@ -205,7 +202,7 @@ func TestNotesNotExists(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "cannot access notes file: open not_exists: no such file or directory\n", buf.stderr.String())
+	assert.Equal(t, "notes file: open not_exists: no such file or directory\n", buf.stderr.String())
 }
 
 func TestDefaultNoteExists(t *testing.T) {
@@ -215,7 +212,7 @@ func TestDefaultNoteExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "")
 
 	file := filepath.Join(tempHome, defaultNotesFile)
-	err := os.WriteFile(file, []byte("# title\ncontents\n"), 0644)
+	err := os.WriteFile(file, []byte("# title\ncontents\n"), 0o600)
 	require.NoError(t, err)
 
 	home, err := os.UserHomeDir()

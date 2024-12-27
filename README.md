@@ -51,12 +51,14 @@ export FCQS_COPY_KEY="ctrl-y"
 export FCQS_OPEN_KEY="ctrl-o"
 export FCQS_EDIT_KEY="ctrl-e"
 export FCQS_BASH_BIND_KEY="\C-o"
-export FCQS_CLIP_COMMAND="xclip -selection c"
+export FCQS_COPY_COMMAND="xclip -selection c"
+export FCQS_COPY_WITH_TITLE=true
+export FCQS_OPEN_COMMAND="open"
 export FCQS_NOTES_FILE="~/fcnotes.md"
 ```
 
 > [!NOTE]
-> `-b` option is only available in fcqs 0.3.0 or later.
+> `--bash` option is only available in fcqs 0.3.0 or later.
 > If you have an older version of fcqs, or want more control,
 > you can use [shell.bash](shell.bash).
 

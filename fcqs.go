@@ -64,7 +64,7 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 }
 
 // WriteContents writes the contents of the note.
-func WriteContents(w io.Writer, r io.Reader, title string) error {
+func WriteContents(w io.Writer, r io.Reader, title string, isNoTitle bool) error {
 	title = strings.Trim(title, " ")
 	if title == "" {
 		return nil
@@ -72,7 +72,6 @@ func WriteContents(w io.Writer, r io.Reader, title string) error {
 
 	state := Normal
 
-	_, isNoTitle := os.LookupEnv("FCQS_CONTENTS_NO_TITLE")
 	f := NewFilter(w, isNoTitle)
 
 	scanner := bufio.NewScanner(r)
@@ -161,7 +160,7 @@ func WriteFirstURL(w io.Writer, r io.Reader, title string) error {
 	}
 
 	var buf bytes.Buffer
-	if err := WriteContents(&buf, r, title); err != nil {
+	if err := WriteContents(&buf, r, title, false); err != nil {
 		return err
 	}
 
@@ -184,7 +183,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title string) error {
 	state := Normal
 
 	var buf bytes.Buffer
-	if err := WriteContents(&buf, r, title); err != nil {
+	if err := WriteContents(&buf, r, title, false); err != nil {
 		return err
 	}
 	scanner := bufio.NewScanner(&buf)
@@ -255,8 +254,8 @@ func WriteNoteLocation(w io.Writer, file *os.File, title string) error {
 	return nil
 }
 
-// GetNotesFileName returns the filename of the notes.
-func GetNotesFileName() (string, error) {
+// NotesFileName returns the filename of the notes.
+func NotesFileName() (string, error) {
 	fileName := os.Getenv("FCQS_NOTES_FILE")
 	if fileName != "" {
 		return fileName, nil
@@ -264,7 +263,7 @@ func GetNotesFileName() (string, error) {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("cannot access user home directory: %w", err)
+		return "", fmt.Errorf("user home directory: %w", err)
 	}
 
 	fileName = filepath.Join(home, DefaultNotesFile)
