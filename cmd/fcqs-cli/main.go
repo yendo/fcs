@@ -48,11 +48,13 @@ func run(w io.Writer) error {
 	}
 	defer file.Close()
 
-	if *showURL || *showCmd || *showLoc {
-		if len(args) != 1 {
+	switch len(args) {
+	case 0:
+		if *showURL || *showCmd || *showLoc {
 			return ErrInvalidNumberOfArgs
 		}
-
+		err = fcqs.WriteTitles(w, file)
+	case 1:
 		switch {
 		case *showURL:
 			err = fcqs.WriteFirstURL(w, file, args[0])
@@ -60,16 +62,9 @@ func run(w io.Writer) error {
 			err = fcqs.WriteFirstCmdLineBlock(w, file, args[0])
 		case *showLoc:
 			err = fcqs.WriteNoteLocation(w, file, args[0])
+		default:
+			err = fcqs.WriteContents(w, file, args[0], *noTitle)
 		}
-
-		return err
-	}
-
-	switch len(args) {
-	case 0:
-		err = fcqs.WriteTitles(w, file)
-	case 1:
-		err = fcqs.WriteContents(w, file, args[0], *noTitle)
 	default:
 		return ErrInvalidNumberOfArgs
 	}
