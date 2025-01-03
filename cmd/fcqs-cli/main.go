@@ -24,6 +24,8 @@ var (
 )
 
 func run(w io.Writer) error {
+	var err error
+
 	flag.Parse()
 	args := flag.Args()
 
@@ -55,8 +57,8 @@ func run(w io.Writer) error {
 		}
 		err = fcqs.WriteTitles(w, file)
 	case 1:
-		title, err := fcqs.NewTitle(args[0])
-		if err != nil {
+		title, tErr := fcqs.NewTitle(args[0])
+		if tErr != nil {
 			// This error should be ignored to omit argument checking in shell scripts.
 			return nil
 		}

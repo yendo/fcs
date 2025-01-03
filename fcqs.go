@@ -24,21 +24,21 @@ const (
 	ScopedFenced
 )
 
-type title struct {
+type Title struct {
 	value string
 }
 
-func (t title) String() string {
+func (t Title) String() string {
 	return t.value
 }
 
-func NewTitle(t string) (*title, error) {
+func NewTitle(t string) (*Title, error) {
 	t = strings.Trim(t, " ")
 	if t == "" {
 		return nil, fmt.Errorf("title is empty")
 	}
 
-	return &title{value: t}, nil
+	return &Title{value: t}, nil
 }
 
 // WriteTitles writes the titles of all notes.
@@ -81,7 +81,7 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 }
 
 // WriteContents writes the contents of the note.
-func WriteContents(w io.Writer, r io.Reader, title *title, isNoTitle bool) error {
+func WriteContents(w io.Writer, r io.Reader, title *Title, isNoTitle bool) error {
 	state := Normal
 
 	f := NewFilter(w, isNoTitle)
@@ -150,7 +150,7 @@ func isTitleLine(line string) bool {
 }
 
 // isSearchedTitleLine returns if the line is the searched title line.
-func isSearchedTitleLine(line string, title *title) bool {
+func isSearchedTitleLine(line string, title *Title) bool {
 	// Searched title line should be title line.
 	if !isTitleLine(line) {
 		return false
@@ -161,7 +161,7 @@ func isSearchedTitleLine(line string, title *title) bool {
 }
 
 // WriteFirstURL writes the first URL in the contents of the note.
-func WriteFirstURL(w io.Writer, r io.Reader, title *title) error {
+func WriteFirstURL(w io.Writer, r io.Reader, title *Title) error {
 	var buf bytes.Buffer
 	if err := WriteContents(&buf, r, title, false); err != nil {
 		return err
@@ -178,7 +178,7 @@ func WriteFirstURL(w io.Writer, r io.Reader, title *title) error {
 }
 
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
-func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *title) error {
+func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *Title) error {
 	state := Normal
 
 	var buf bytes.Buffer
@@ -229,7 +229,7 @@ func isShellCodeBlockBegin(line string) bool {
 }
 
 // WriteNoteLocation writes the file name and line number of the note.
-func WriteNoteLocation(w io.Writer, file *os.File, title *title) error {
+func WriteNoteLocation(w io.Writer, file *os.File, title *Title) error {
 	c := 0
 	scanner := bufio.NewScanner(file)
 
