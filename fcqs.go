@@ -151,13 +151,8 @@ func isTitleLine(line string) bool {
 
 // isSearchedTitleLine returns if the line is the searched title line.
 func isSearchedTitleLine(line string, title *title) bool {
-	// Title line must start with #.
-	if !strings.HasPrefix(line, "#") {
-		return false
-	}
-
-	// When the title line must have a space after #.
-	if !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
+	// Searched title line should be title line.
+	if !isTitleLine(line) {
 		return false
 	}
 
