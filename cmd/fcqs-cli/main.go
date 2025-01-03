@@ -55,18 +55,24 @@ func run(w io.Writer) error {
 		}
 		err = fcqs.WriteTitles(w, file)
 	case 1:
+		title, err := fcqs.NewTitle(args[0])
+		if err != nil {
+			// This error should be ignored to omit argument checking in shell scripts.
+			return nil
+		}
+
 		switch {
 		case *showURL:
-			err = fcqs.WriteFirstURL(w, file, args[0])
+			err = fcqs.WriteFirstURL(w, file, title)
 		case *showCmd:
-			err = fcqs.WriteFirstCmdLineBlock(w, file, args[0])
+			err = fcqs.WriteFirstCmdLineBlock(w, file, title)
 		case *showLoc:
-			err = fcqs.WriteNoteLocation(w, file, args[0])
+			err = fcqs.WriteNoteLocation(w, file, title)
 		default:
-			err = fcqs.WriteContents(w, file, args[0], *noTitle)
+			err = fcqs.WriteContents(w, file, title, *noTitle)
 		}
 	default:
-		return ErrInvalidNumberOfArgs
+		err = ErrInvalidNumberOfArgs
 	}
 
 	return err
