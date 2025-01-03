@@ -18,11 +18,11 @@ test-v: unit-test-v integration-test-v
 
 .PHONY: unit-test
 unit-test:
-	go test -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcqs-cli/ .
+	go test -shuffle=on -cover -coverprofile cover-ut.out ./cmd/... ./internal/... .
 
 .PHONY: unit-test-v
 unit-test-v:
-	go test -v -shuffle=on -cover -coverprofile cover-ut.out ./cmd/fcqs-cli/ .
+	go test -v -shuffle=on -cover -coverprofile cover-ut.out ./cmd/... ./internal/... .
 
 .PHONY: integration-test
 integration-test: test/$(BINARY)

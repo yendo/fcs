@@ -13,54 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/yendo/fcqs"
+	"github.com/yendo/fcqs/internal/value"
 	"github.com/yendo/fcqs/test"
 )
-
-func TestNewTitle(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success cases", func(t *testing.T) {
-		tests := []struct {
-			name  string
-			title string
-		}{
-			{name: "trimmed title", title: "title string"},
-			{name: "un-trimmed title", title: " title string  "},
-		}
-
-		for _, tc := range tests {
-			t.Run(tc.name, func(t *testing.T) {
-				t.Parallel()
-
-				title, err := fcqs.NewTitle(tc.title)
-
-				assert.NoError(t, err)
-				assert.Equal(t, "title string", title.String())
-			})
-		}
-	})
-
-	t.Run("fail cases", func(t *testing.T) {
-		tests := []struct {
-			name  string
-			title string
-		}{
-			{name: "empty title", title: ""},
-			{name: "white spaces title", title: "  "},
-		}
-
-		for _, tc := range tests {
-			t.Run(tc.name, func(t *testing.T) {
-				t.Parallel()
-
-				title, err := fcqs.NewTitle(tc.title)
-
-				assert.Error(t, err)
-				assert.Nil(t, title)
-			})
-		}
-	})
-}
 
 func TestWriteTitles(t *testing.T) {
 	t.Parallel()
@@ -126,7 +81,7 @@ func TestWriteContents(t *testing.T) {
 
 				file := test.OpenTestNotesFile(t, test.NotesFile)
 				titleStr := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
-				title, err := fcqs.NewTitle(titleStr)
+				title, err := value.NewTitle(titleStr)
 				require.NoError(t, err)
 
 				var buf bytes.Buffer
@@ -147,7 +102,7 @@ func TestWriteContents(t *testing.T) {
 
 				file := test.OpenTestNotesFile(t, test.NotesFile)
 				titleStr := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
-				title, err := fcqs.NewTitle(titleStr)
+				title, err := value.NewTitle(titleStr)
 				require.NoError(t, err)
 
 				var buf bytes.Buffer
@@ -183,7 +138,7 @@ func TestWriteNoContents(t *testing.T) {
 
 			file := test.OpenTestNotesFile(t, test.NotesFile)
 			titleStr := strings.TrimLeft(tc.title, "#")
-			title, err := fcqs.NewTitle(titleStr)
+			title, err := value.NewTitle(titleStr)
 			require.NoError(t, err)
 
 			var buf bytes.Buffer
@@ -199,7 +154,7 @@ func TestWriteNoContents(t *testing.T) {
 
 		errStr := "scan error"
 		file := iotest.ErrReader(errors.New(errStr))
-		title, err := fcqs.NewTitle("title")
+		title, err := value.NewTitle("title")
 		require.NoError(t, err)
 
 		var buf bytes.Buffer
@@ -213,7 +168,7 @@ func TestWriteNoContents(t *testing.T) {
 func TestWriteFirstURL(t *testing.T) {
 	t.Parallel()
 
-	title, err := fcqs.NewTitle("URL")
+	title, err := value.NewTitle("URL")
 	require.NoError(t, err)
 
 	t.Run("scan succeeded", func(t *testing.T) {
@@ -272,7 +227,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			t.Parallel()
 
 			file := test.OpenTestNotesFile(t, test.ShellBlockFile)
-			title, err := fcqs.NewTitle(tc.title)
+			title, err := value.NewTitle(tc.title)
 			require.NoError(t, err)
 
 			var buf bytes.Buffer
@@ -289,7 +244,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 
 		errStr := "scan error"
 		r := iotest.ErrReader(errors.New(errStr))
-		title, err := fcqs.NewTitle("title")
+		title, err := value.NewTitle("title")
 		require.NoError(t, err)
 
 		var buf bytes.Buffer
@@ -304,7 +259,7 @@ func TestWriteNoteLocation(t *testing.T) {
 	t.Parallel()
 
 	testFile := test.OpenTestNotesFile(t, test.LocationFile)
-	title, err := fcqs.NewTitle("5th Line")
+	title, err := value.NewTitle("5th Line")
 	require.NoError(t, err)
 
 	var buf bytes.Buffer

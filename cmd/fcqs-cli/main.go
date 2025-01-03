@@ -8,6 +8,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/yendo/fcqs"
+	"github.com/yendo/fcqs/internal/value"
 )
 
 var (
@@ -57,7 +58,7 @@ func run(w io.Writer) error {
 		}
 		err = fcqs.WriteTitles(w, file)
 	case 1:
-		title, tErr := fcqs.NewTitle(args[0])
+		title, tErr := value.NewTitle(args[0])
 		if tErr != nil {
 			// This error should be ignored to omit argument checking in shell scripts.
 			return nil
