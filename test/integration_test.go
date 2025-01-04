@@ -181,7 +181,7 @@ func TestCmdNotesLocation(t *testing.T) {
 }
 
 func TestCmdMultiFiles(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", LocationFile+":"+LocationExtraFile)
+	t.Setenv("FCQS_NOTES_FILE", LocationFile+FileSeparator()+LocationExtraFile)
 
 	t.Run("show titles", func(t *testing.T) {
 		buf := &stdBuf{}
@@ -217,7 +217,7 @@ func TestCmdMultiFiles(t *testing.T) {
 	})
 
 	t.Run("file error", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", FullPath(LocationFile)+":"+"invalid_file")
+		t.Setenv("FCQS_NOTES_FILE", LocationFile+FileSeparator()+"invalid_file")
 
 		buf := &stdBuf{}
 		cmd := buf.newTestCmd()

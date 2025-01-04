@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -319,12 +318,7 @@ func TestNotesFileName(t *testing.T) {
 
 	t.Run("set files from environment variable", func(t *testing.T) {
 		expectedFileNames := []string{"test_file_1.md", "test_file_2.md", "test_file_3.md"}
-		sep := ":"
-		if runtime.GOOS == "windows" {
-			sep = ";"
-		}
-
-		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, sep))
+		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, test.FileSeparator()))
 
 		fileName, err := fcqs.NotesFileName()
 

@@ -39,6 +39,15 @@ func FullPath(filename string) string {
 	return filepath.Join(path.Dir(thisFileName), filename)
 }
 
+func FileSeparator() string {
+	sep := ":"
+	if runtime.GOOS == "windows" {
+		sep = ";"
+	}
+
+	return sep
+}
+
 // ExpectedTitles returns the titles of the test notes.
 func ExpectedTitles() string {
 	return `title
