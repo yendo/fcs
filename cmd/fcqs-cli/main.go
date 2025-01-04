@@ -8,6 +8,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/yendo/fcqs"
+	"github.com/yendo/fcqs/internal/value"
 )
 
 var (
@@ -24,6 +25,8 @@ var (
 )
 
 func run(w io.Writer) error {
+	var err error
+
 	flag.Parse()
 	args := flag.Args()
 
@@ -48,30 +51,31 @@ func run(w io.Writer) error {
 	}
 	defer file.Close()
 
-	if *showURL || *showCmd || *showLoc {
-		if len(args) != 1 {
+	switch len(args) {
+	case 0:
+		if *showURL || *showCmd || *showLoc {
 			return ErrInvalidNumberOfArgs
+		}
+		err = fcqs.WriteTitles(w, file)
+	case 1:
+		title, tErr := value.NewTitle(args[0])
+		if tErr != nil {
+			// This error should be ignored to omit argument checking in shell scripts.
+			return nil
 		}
 
 		switch {
 		case *showURL:
-			err = fcqs.WriteFirstURL(w, file, args[0])
+			err = fcqs.WriteFirstURL(w, file, title)
 		case *showCmd:
-			err = fcqs.WriteFirstCmdLineBlock(w, file, args[0])
+			err = fcqs.WriteFirstCmdLineBlock(w, file, title)
 		case *showLoc:
-			err = fcqs.WriteNoteLocation(w, file, args[0])
+			err = fcqs.WriteNoteLocation(w, file, title)
+		default:
+			err = fcqs.WriteContents(w, file, title, *noTitle)
 		}
-
-		return err
-	}
-
-	switch len(args) {
-	case 0:
-		err = fcqs.WriteTitles(w, file)
-	case 1:
-		err = fcqs.WriteContents(w, file, args[0], *noTitle)
 	default:
-		return ErrInvalidNumberOfArgs
+		err = ErrInvalidNumberOfArgs
 	}
 
 	return err

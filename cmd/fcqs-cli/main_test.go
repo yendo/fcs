@@ -61,6 +61,7 @@ func TestRunSuccess(t *testing.T) {
 
 	t.Run("with an arg and no_title option", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli", "-t", "title"})
+		setCommandLineFlag(t, "notitle")
 
 		var buf bytes.Buffer
 		err := run(&buf)
@@ -68,6 +69,18 @@ func TestRunSuccess(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "contents\n", buf.String())
 	})
+
+	t.Run("with an empty arg and some option", func(t *testing.T) {
+		setOSArgs(t, []string{"fcqs-cli", "-u", ""})
+		setCommandLineFlag(t, "url")
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.NoError(t, err)
+		assert.Empty(t, buf.String())
+	})
+
 }
 
 func TestRunFail(t *testing.T) {

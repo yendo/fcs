@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/yendo/fcqs"
+	"github.com/yendo/fcqs/internal/value"
 	"github.com/yendo/fcqs/test"
 )
 
@@ -79,10 +80,12 @@ func TestWriteContents(t *testing.T) {
 				t.Parallel()
 
 				file := test.OpenTestNotesFile(t, test.NotesFile)
-				var buf bytes.Buffer
-				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+				titleStr := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+				title, err := value.NewTitle(titleStr)
+				require.NoError(t, err)
 
-				err := fcqs.WriteContents(&buf, file, title, false)
+				var buf bytes.Buffer
+				err = fcqs.WriteContents(&buf, file, title, false)
 
 				assert.NoError(t, err)
 				assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
@@ -98,10 +101,12 @@ func TestWriteContents(t *testing.T) {
 				t.Parallel()
 
 				file := test.OpenTestNotesFile(t, test.NotesFile)
-				var buf bytes.Buffer
-				title := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+				titleStr := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
+				title, err := value.NewTitle(titleStr)
+				require.NoError(t, err)
 
-				err := fcqs.WriteContents(&buf, file, title, true)
+				var buf bytes.Buffer
+				err = fcqs.WriteContents(&buf, file, title, true)
 
 				assert.NoError(t, err)
 				assert.Equal(t, tc.contents, buf.String())
@@ -118,14 +123,6 @@ func TestWriteNoContents(t *testing.T) {
 		title string
 	}{
 		{
-			desc:  "Empty titles are recognized as title, but do not output the contents.",
-			title: "#",
-		},
-		{
-			desc:  "Titles only spaces are recognized as title, but do not output the contents.",
-			title: "#  ",
-		},
-		{
 			desc:  "Titles without a space after the `#` are not recognized as title",
 			title: "#no_space_title",
 		},
@@ -139,24 +136,29 @@ func TestWriteNoContents(t *testing.T) {
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
-			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.NotesFile)
+			titleStr := strings.TrimLeft(tc.title, "#")
+			title, err := value.NewTitle(titleStr)
+			require.NoError(t, err)
 
-			err := fcqs.WriteContents(&buf, file, strings.TrimLeft(tc.title, "#"), false)
+			var buf bytes.Buffer
+			err = fcqs.WriteContents(&buf, file, title, false)
 
 			assert.NoError(t, err)
 			assert.Empty(t, buf.String())
 		})
 	}
 
-	t.Run("scan error", func(t *testing.T) {
+	t.Run("scan failed", func(t *testing.T) {
 		t.Parallel()
 
 		errStr := "scan error"
 		file := iotest.ErrReader(errors.New(errStr))
+		title, err := value.NewTitle("title")
+		require.NoError(t, err)
 
 		var buf bytes.Buffer
-		err := fcqs.WriteContents(&buf, file, "title", false)
+		err = fcqs.WriteContents(&buf, file, title, false)
 
 		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
@@ -165,36 +167,30 @@ func TestWriteNoContents(t *testing.T) {
 
 func TestWriteFirstURL(t *testing.T) {
 	t.Parallel()
-	file := test.OpenTestNotesFile(t, test.NotesFile)
 
-	t.Run("title is valid", func(t *testing.T) {
+	title, err := value.NewTitle("URL")
+	require.NoError(t, err)
+
+	t.Run("scan succeeded", func(t *testing.T) {
 		t.Parallel()
 
+		file := test.OpenTestNotesFile(t, test.NotesFile)
+
 		var buf bytes.Buffer
-		err := fcqs.WriteFirstURL(&buf, file, "URL")
+		err = fcqs.WriteFirstURL(&buf, file, title)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
-	})
-
-	t.Run("title is empty", func(t *testing.T) {
-		t.Parallel()
-
-		var buf bytes.Buffer
-		err := fcqs.WriteFirstURL(&buf, file, "")
-
-		assert.NoError(t, err)
-		assert.Empty(t, buf.String())
 	})
 
 	t.Run("scan failed", func(t *testing.T) {
 		t.Parallel()
 
 		errStr := "scan error"
-		r := iotest.ErrReader(errors.New(errStr))
+		file := iotest.ErrReader(errors.New(errStr))
 
 		var buf bytes.Buffer
-		err := fcqs.WriteFirstURL(&buf, r, "title")
+		err = fcqs.WriteFirstURL(&buf, file, title)
 
 		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
@@ -224,17 +220,18 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		{"go", false},
 		{"no identifier", false},
 		{"other identifier", false},
-		{"", false},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
-			var buf bytes.Buffer
 			file := test.OpenTestNotesFile(t, test.ShellBlockFile)
+			title, err := value.NewTitle(tc.title)
+			require.NoError(t, err)
 
-			err := fcqs.WriteFirstCmdLineBlock(&buf, file, tc.title)
+			var buf bytes.Buffer
+			err = fcqs.WriteFirstCmdLineBlock(&buf, file, title)
 
 			assert.NoError(t, err)
 			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
@@ -247,9 +244,11 @@ func TestWriteFirstCmdLine(t *testing.T) {
 
 		errStr := "scan error"
 		r := iotest.ErrReader(errors.New(errStr))
+		title, err := value.NewTitle("title")
+		require.NoError(t, err)
 
 		var buf bytes.Buffer
-		err := fcqs.WriteFirstCmdLineBlock(&buf, r, "title")
+		err = fcqs.WriteFirstCmdLineBlock(&buf, r, title)
 
 		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
@@ -258,27 +257,16 @@ func TestWriteFirstCmdLine(t *testing.T) {
 
 func TestWriteNoteLocation(t *testing.T) {
 	t.Parallel()
+
 	testFile := test.OpenTestNotesFile(t, test.LocationFile)
+	title, err := value.NewTitle("5th Line")
+	require.NoError(t, err)
 
-	t.Run("title is valid", func(t *testing.T) {
-		t.Parallel()
+	var buf bytes.Buffer
+	err = fcqs.WriteNoteLocation(&buf, testFile, title)
 
-		var buf bytes.Buffer
-		err := fcqs.WriteNoteLocation(&buf, testFile, "5th Line")
-
-		assert.NoError(t, err)
-		assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
-	})
-
-	t.Run("title is empty", func(t *testing.T) {
-		t.Parallel()
-
-		var buf bytes.Buffer
-		err := fcqs.WriteNoteLocation(&buf, testFile, "")
-
-		assert.NoError(t, err)
-		assert.Empty(t, buf.String())
-	})
+	assert.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 }
 
 func TestNotesFileName(t *testing.T) {

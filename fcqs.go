@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/yendo/fcqs/internal/value"
 	"mvdan.cc/xurls/v2"
 )
 
@@ -64,12 +65,7 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 }
 
 // WriteContents writes the contents of the note.
-func WriteContents(w io.Writer, r io.Reader, title string, isNoTitle bool) error {
-	title = strings.Trim(title, " ")
-	if title == "" {
-		return nil
-	}
-
+func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool) error {
 	state := Normal
 
 	f := NewFilter(w, isNoTitle)
@@ -138,27 +134,18 @@ func isTitleLine(line string) bool {
 }
 
 // isSearchedTitleLine returns if the line is the searched title line.
-func isSearchedTitleLine(line string, title string) bool {
-	// Title must start with #.
-	if !strings.HasPrefix(line, "#") {
-		return false
-	}
-
-	// When the title is not blank, the title must have a space after #.
-	if title != "" && !strings.HasPrefix(strings.TrimLeft(line, "#"), " ") {
+func isSearchedTitleLine(line string, title *value.Title) bool {
+	// Searched title line should be title line.
+	if !isTitleLine(line) {
 		return false
 	}
 
 	// When the trimmed line and title match, the content starts.
-	return strings.Trim(line, "# ") == strings.Trim(title, "# ")
+	return strings.Trim(line, "# ") == title.String()
 }
 
 // WriteFirstURL writes the first URL in the contents of the note.
-func WriteFirstURL(w io.Writer, r io.Reader, title string) error {
-	if isEmptyTrimmedTitle(title) {
-		return nil
-	}
-
+func WriteFirstURL(w io.Writer, r io.Reader, title *value.Title) error {
 	var buf bytes.Buffer
 	if err := WriteContents(&buf, r, title, false); err != nil {
 		return err
@@ -175,11 +162,7 @@ func WriteFirstURL(w io.Writer, r io.Reader, title string) error {
 }
 
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
-func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title string) error {
-	if isEmptyTrimmedTitle(title) {
-		return nil
-	}
-
+func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error {
 	state := Normal
 
 	var buf bytes.Buffer
@@ -230,11 +213,7 @@ func isShellCodeBlockBegin(line string) bool {
 }
 
 // WriteNoteLocation writes the file name and line number of the note.
-func WriteNoteLocation(w io.Writer, file *os.File, title string) error {
-	if isEmptyTrimmedTitle(title) {
-		return nil
-	}
-
+func WriteNoteLocation(w io.Writer, file *os.File, title *value.Title) error {
 	c := 0
 	scanner := bufio.NewScanner(file)
 
@@ -268,9 +247,4 @@ func NotesFileName() (string, error) {
 
 	fileName = filepath.Join(home, DefaultNotesFile)
 	return fileName, nil
-}
-
-// isEmptyTrimmedTitle determines if trimmed tile is empty.
-func isEmptyTrimmedTitle(title string) bool {
-	return strings.Trim(title, " ") == ""
 }
