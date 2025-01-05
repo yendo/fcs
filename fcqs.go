@@ -14,10 +14,14 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
-const DefaultNotesFile = "fcnotes.md"
-
-// State of text line.
 const (
+	DefaultNotesFile = "fcnotes.md"
+
+	codeFence      = "```"
+	atxHeadingChar = "#"
+	shellPrompt    = "$"
+
+	// State of text line.
 	Normal = iota
 	Fenced
 	Scoped
@@ -41,7 +45,7 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 		switch state {
 		case Normal:
 			if isTitleLineWithString(line) {
-				title = strings.Trim(line, "# ")
+				title = trimmedTitle(line)
 				continue
 			}
 
@@ -50,12 +54,12 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 				allTitles = append(allTitles, title)
 			}
 
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				state = Fenced
 			}
 
 		case Fenced:
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				state = Normal
 			}
 		}
@@ -79,7 +83,7 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 
 		switch state {
 		case Normal:
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				state = Fenced
 			}
 
@@ -89,7 +93,7 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 			}
 
 		case Fenced:
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				state = Normal
 			}
 
@@ -99,14 +103,14 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 				break
 			}
 
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				state = ScopedFenced
 			}
 
 			f.Write(line)
 
 		case ScopedFenced:
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				state = Scoped
 			}
 			f.Write(line)
@@ -123,17 +127,17 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 // isTitleLine returns if the line is title line.
 func isTitleLine(line string) bool {
 	// Title line must start with #.
-	if !strings.HasPrefix(line, "#") {
+	if !strings.HasPrefix(line, atxHeadingChar) {
 		return false
 	}
 
 	// Blank title is valid.
-	if strings.TrimLeft(line, "# ") == "" {
+	if trimmedTitle(line) == "" {
 		return true
 	}
 
 	// The title line must have a space after #.
-	return strings.HasPrefix(strings.TrimLeft(line, "#"), " ")
+	return strings.HasPrefix(strings.TrimLeft(line, atxHeadingChar), " ")
 }
 
 // isTitleLineWithString returns if the line is title line with string.
@@ -143,7 +147,7 @@ func isTitleLineWithString(line string) bool {
 		return false
 	}
 
-	return strings.Trim(line, "# ") != ""
+	return trimmedTitle(line) != ""
 }
 
 // isSearchedTitleLine returns if the line is the searched title line.
@@ -154,7 +158,11 @@ func isSearchedTitleLine(line string, title *value.Title) bool {
 	}
 
 	// When the trimmed line and title match, the content starts.
-	return strings.Trim(line, "# ") == title.String()
+	return trimmedTitle(line) == title.String()
+}
+
+func trimmedTitle(line string) string {
+	return strings.Trim(line, atxHeadingChar+" ")
 }
 
 // WriteFirstURL writes the first URL in the contents of the note.
@@ -194,10 +202,10 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 			}
 
 		case Fenced:
-			if strings.HasPrefix(line, "```") {
+			if strings.HasPrefix(line, codeFence) {
 				break
 			}
-			fmt.Fprintln(w, strings.TrimLeft(line, "$ "))
+			fmt.Fprintln(w, strings.TrimLeft(line, shellPrompt+" "))
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -207,7 +215,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 	return nil
 }
 
-var reShellCodeBlock = regexp.MustCompile("^```+\\s*(\\S+).*$")
+var reShellCodeBlock = regexp.MustCompile(fmt.Sprintf("^%s+\\s*(\\S+).*$", codeFence))
 
 // isShellCodeBlockBegin determines if the line is the beginning of a shell code block.
 func isShellCodeBlockBegin(line string) bool {
