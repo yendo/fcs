@@ -40,31 +40,18 @@ func run(w io.Writer) error {
 		return nil
 	}
 
-	fileName, err := fcqs.NotesFileName()
+	notes, err := fcqs.OpenNotesFiles()
 	if err != nil {
-		return fmt.Errorf("notes file name: %w", err)
+		return err
 	}
-
-	var readers []io.Reader
-	var files []*os.File
-	for _, v := range fileName {
-		file, err := os.Open(v)
-		if err != nil {
-			return fmt.Errorf("notes file: %w", err)
-		}
-		readers = append(readers, file)
-		files = append(files, file)
-		defer file.Close()
-	}
-
-	file := io.MultiReader(readers...)
+	defer notes.Close()
 
 	switch len(args) {
 	case 0:
 		if *showURL || *showCmd || *showLoc {
 			return ErrInvalidNumberOfArgs
 		}
-		err = fcqs.WriteTitles(w, file)
+		err = fcqs.WriteTitles(w, notes.Reader)
 	case 1:
 		title, tErr := value.NewTitle(args[0])
 		if tErr != nil {
@@ -74,13 +61,13 @@ func run(w io.Writer) error {
 
 		switch {
 		case *showURL:
-			err = fcqs.WriteFirstURL(w, file, title)
+			err = fcqs.WriteFirstURL(w, notes.Reader, title)
 		case *showCmd:
-			err = fcqs.WriteFirstCmdLineBlock(w, file, title)
+			err = fcqs.WriteFirstCmdLineBlock(w, notes.Reader, title)
 		case *showLoc:
-			err = fcqs.WriteNoteLocation(w, files, title)
+			err = fcqs.WriteNoteLocation(w, notes.Files, title)
 		default:
-			err = fcqs.WriteContents(w, file, title, *noTitle)
+			err = fcqs.WriteContents(w, notes.Reader, title, *noTitle)
 		}
 	default:
 		err = ErrInvalidNumberOfArgs

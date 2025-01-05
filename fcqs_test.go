@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -291,49 +290,5 @@ func TestWriteNoteLocation(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
-	})
-}
-
-func TestNotesFileName(t *testing.T) {
-	t.Run("failed to access user home directory", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", "")
-		t.Setenv("HOME", "")
-
-		fileName, err := fcqs.NotesFileName()
-
-		assert.Empty(t, fileName)
-		assert.Error(t, err)
-		assert.EqualError(t, err, "user home directory: $HOME is not defined")
-	})
-
-	t.Run("set a file from environment variable", func(t *testing.T) {
-		expectedFileName := "test_file_from_env.md"
-		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
-
-		fileName, err := fcqs.NotesFileName()
-
-		assert.NoError(t, err)
-		assert.Equal(t, expectedFileName, fileName[0])
-	})
-
-	t.Run("set files from environment variable", func(t *testing.T) {
-		expectedFileNames := []string{"test_file_1.md", "test_file_2.md", "test_file_3.md"}
-		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, test.FileSeparator()))
-
-		fileName, err := fcqs.NotesFileName()
-
-		assert.NoError(t, err)
-		assert.ElementsMatch(t, expectedFileNames, fileName)
-	})
-
-	t.Run("default filename", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", "")
-		home, err := os.UserHomeDir()
-		require.NoError(t, err)
-
-		filename, err := fcqs.NotesFileName()
-
-		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), filename[0])
 	})
 }

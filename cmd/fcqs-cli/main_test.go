@@ -80,7 +80,6 @@ func TestRunSuccess(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, buf.String())
 	})
-
 }
 
 func TestRunFail(t *testing.T) {

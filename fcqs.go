@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 
@@ -233,28 +231,4 @@ func WriteNoteLocation(w io.Writer, files []*os.File, title *value.Title) error 
 		}
 	}
 	return nil
-}
-
-// NotesFileName returns the filename of the notes.
-func NotesFileName() ([]string, error) {
-	var fileNames []string
-
-	f := os.Getenv("FCQS_NOTES_FILE")
-	if f != "" {
-		sep := ":"
-		if runtime.GOOS == "windows" {
-			sep = ";"
-		}
-
-		fileNames = strings.Split(f, sep)
-		return fileNames, nil
-	}
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("user home directory: %w", err)
-	}
-
-	fileNames = append(fileNames, filepath.Join(home, DefaultNotesFile))
-	return fileNames, nil
 }
