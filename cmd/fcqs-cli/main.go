@@ -45,11 +45,19 @@ func run(w io.Writer) error {
 		return fmt.Errorf("notes file name: %w", err)
 	}
 
-	file, err := os.Open(fileName)
-	if err != nil {
-		return fmt.Errorf("notes file: %w", err)
+	var readers []io.Reader
+	var files []*os.File
+	for _, v := range fileName {
+		file, err := os.Open(v)
+		if err != nil {
+			return fmt.Errorf("notes file: %w", err)
+		}
+		readers = append(readers, file)
+		files = append(files, file)
+		defer file.Close()
 	}
-	defer file.Close()
+
+	file := io.MultiReader(readers...)
 
 	switch len(args) {
 	case 0:
@@ -70,7 +78,7 @@ func run(w io.Writer) error {
 		case *showCmd:
 			err = fcqs.WriteFirstCmdLineBlock(w, file, title)
 		case *showLoc:
-			err = fcqs.WriteNoteLocation(w, file, title)
+			err = fcqs.WriteNoteLocation(w, files, title)
 		default:
 			err = fcqs.WriteContents(w, file, title, *noTitle)
 		}

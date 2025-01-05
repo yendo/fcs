@@ -121,6 +121,52 @@ func TestRunFail(t *testing.T) {
 	})
 }
 
+func TestRunMultiFiles(t *testing.T) {
+	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.LocationFile)+test.FileSeparator()+test.FullPath(test.LocationExtraFile))
+
+	t.Run("show titles", func(t *testing.T) {
+		setOSArgs(t, []string{"fcqs-cli"})
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		require.NoError(t, err)
+		assert.Equal(t, "location test data\n5th Line\nother 5th Line\n9th Line\n", buf.String())
+	})
+
+	t.Run("show contents", func(t *testing.T) {
+		setOSArgs(t, []string{"fcqs-cli", "9th Line"})
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		require.NoError(t, err)
+		assert.Equal(t, "# 9th Line\n\nDo not chang the 9th line.\n", buf.String())
+	})
+
+	t.Run("show location", func(t *testing.T) {
+		setOSArgs(t, []string{"fcqs-cli", "-l", "9th Line"})
+		setCommandLineFlag(t, "location")
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		require.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("%q 9\n", test.FullPath(test.LocationExtraFile)), buf.String())
+	})
+
+	t.Run("file error", func(t *testing.T) {
+		t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.LocationFile)+test.FileSeparator()+"invalid_file")
+		setOSArgs(t, []string{"fcqs-cli"})
+
+		var buf bytes.Buffer
+		err := run(&buf)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "notes file: open invalid_file: no such file or directory")
+	})
+}
+
 func TestRunWithURLFlag(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.NotesFile))
 	setCommandLineFlag(t, "url")

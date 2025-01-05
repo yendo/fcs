@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	NotesFile      = "testdata/test_fcnotes.md"
-	ShellBlockFile = "testdata/test_shellblock.md"
-	LocationFile   = "testdata/test_location.md"
+	NotesFile         = "testdata/test_fcnotes.md"
+	ShellBlockFile    = "testdata/test_shellblock.md"
+	LocationFile      = "testdata/test_location.md"
+	LocationExtraFile = "testdata/test_location_extra.md"
 )
 
 // OpenTestNotesFile opens a test notes file.
@@ -36,6 +37,15 @@ func FullPath(filename string) string {
 	_, thisFileName, _, _ := runtime.Caller(0)
 
 	return filepath.Join(path.Dir(thisFileName), filename)
+}
+
+func FileSeparator() string {
+	sep := ":"
+	if runtime.GOOS == "windows" {
+		sep = ";"
+	}
+
+	return sep
 }
 
 // ExpectedTitles returns the titles of the test notes.
