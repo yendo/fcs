@@ -34,20 +34,24 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		if line == "" {
+			continue
+		}
 
 		switch state {
 		case Normal:
-			if isTitleLine(line) {
+			if isTitleLineWithString(line) {
 				title = strings.Trim(line, "# ")
-			} else if line != "" {
-				if title != "" && !slices.Contains(allTitles, title) {
-					fmt.Fprintln(w, title)
-					allTitles = append(allTitles, title)
-				}
+				continue
+			}
 
-				if strings.HasPrefix(line, "```") {
-					state = Fenced
-				}
+			if !slices.Contains(allTitles, title) {
+				fmt.Fprintln(w, title)
+				allTitles = append(allTitles, title)
+			}
+
+			if strings.HasPrefix(line, "```") {
+				state = Fenced
 			}
 
 		case Fenced:
@@ -130,6 +134,16 @@ func isTitleLine(line string) bool {
 
 	// The title line must have a space after #.
 	return strings.HasPrefix(strings.TrimLeft(line, "#"), " ")
+}
+
+// isTitleLineWithString returns if the line is title line with string.
+func isTitleLineWithString(line string) bool {
+	// Title line with string should be title line.
+	if !isTitleLine(line) {
+		return false
+	}
+
+	return strings.Trim(line, "# ") != ""
 }
 
 // isSearchedTitleLine returns if the line is the searched title line.
