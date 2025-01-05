@@ -19,8 +19,8 @@ func TestNewNotesFiles(t *testing.T) {
 
 		notes, err := fcqs.OpenNotesFiles()
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "notes file name: user home directory: $HOME is not defined")
+		require.Error(t, err)
+		require.EqualError(t, err, "notes file name: user home directory: $HOME is not defined")
 		assert.Nil(t, notes)
 	})
 
@@ -30,8 +30,8 @@ func TestNewNotesFiles(t *testing.T) {
 
 		notes, err := fcqs.OpenNotesFiles()
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "notes file: open invalid_file: no such file or directory")
+		require.Error(t, err)
+		require.EqualError(t, err, "notes file: open invalid_file: no such file or directory")
 		assert.Nil(t, notes)
 	})
 
@@ -42,7 +42,7 @@ func TestNewNotesFiles(t *testing.T) {
 		notes, err := fcqs.OpenNotesFiles()
 		notes.Close()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, notes.Reader)
 		assert.Equal(t, expectedFileName, notes.Files[0].Name())
 	})
@@ -54,7 +54,7 @@ func TestNewNotesFiles(t *testing.T) {
 		notes, err := fcqs.OpenNotesFiles()
 		notes.Close()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, notes.Reader)
 		assert.Equal(t, expectedFileNames[0], notes.Files[0].Name())
 		assert.Equal(t, expectedFileNames[1], notes.Files[1].Name())
@@ -69,7 +69,7 @@ func TestNewNotesFiles(t *testing.T) {
 		notes, err := fcqs.OpenNotesFiles()
 		notes.Close()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, notes.Reader)
 		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), notes.Files[0].Name())
 	})

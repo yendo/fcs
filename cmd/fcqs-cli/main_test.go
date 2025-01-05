@@ -45,7 +45,7 @@ func TestRunSuccess(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, test.ExpectedTitles(), buf.String())
 	})
 
@@ -55,7 +55,7 @@ func TestRunSuccess(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "# title\n\ncontents\n", buf.String())
 	})
 
@@ -66,7 +66,7 @@ func TestRunSuccess(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "contents\n", buf.String())
 	})
 
@@ -77,7 +77,7 @@ func TestRunSuccess(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, buf.String())
 	})
 }
@@ -90,8 +90,8 @@ func TestRunFail(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "notes file name: user home directory: $HOME is not defined")
+		require.Error(t, err)
+		require.EqualError(t, err, "notes file name: user home directory: $HOME is not defined")
 		assert.Empty(t, buf.String())
 	})
 
@@ -102,8 +102,8 @@ func TestRunFail(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, fmt.Sprintf("notes file: open no_exits/%s: no such file or directory", fcqs.DefaultNotesFile))
+		require.Error(t, err)
+		require.EqualError(t, err, fmt.Sprintf("notes file: open no_exits/%s: no such file or directory", fcqs.DefaultNotesFile))
 		assert.Empty(t, buf.String())
 	})
 
@@ -114,8 +114,8 @@ func TestRunFail(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "invalid number of arguments")
+		require.Error(t, err)
+		require.EqualError(t, err, "invalid number of arguments")
 		assert.Empty(t, buf.String())
 	})
 }
@@ -161,8 +161,8 @@ func TestRunMultiFiles(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "notes file: open invalid_file: no such file or directory")
+		require.Error(t, err)
+		require.EqualError(t, err, "notes file: open invalid_file: no such file or directory")
 	})
 }
 
@@ -176,8 +176,8 @@ func TestRunWithURLFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "invalid number of arguments")
+		require.Error(t, err)
+		require.EqualError(t, err, "invalid number of arguments")
 		assert.Empty(t, buf.String())
 	})
 
@@ -187,7 +187,7 @@ func TestRunWithURLFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
 	})
 }
@@ -202,8 +202,8 @@ func TestRunWithCmdFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "invalid number of arguments")
+		require.Error(t, err)
+		require.EqualError(t, err, "invalid number of arguments")
 		assert.Empty(t, buf.String())
 	})
 
@@ -213,7 +213,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "ls -l | nl\n", buf.String())
 	})
 
@@ -223,7 +223,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "date\n", buf.String())
 	})
 }
@@ -239,8 +239,8 @@ func TestRunWithLocationFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.Error(t, err)
-		assert.EqualError(t, err, "invalid number of arguments")
+		require.Error(t, err)
+		require.EqualError(t, err, "invalid number of arguments")
 		assert.Empty(t, buf.String())
 	})
 
@@ -250,7 +250,7 @@ func TestRunWithLocationFlag(t *testing.T) {
 		var buf bytes.Buffer
 		err := run(&buf)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 5\n", testFileName), buf.String())
 	})
 }
@@ -264,7 +264,7 @@ func TestRunWithVersionFlag(t *testing.T) {
 	var buf bytes.Buffer
 	err := run(&buf)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, version+"\n", buf.String())
 }
 
@@ -279,6 +279,6 @@ func TestRunWithBashScriptFlag(t *testing.T) {
 	var buf bytes.Buffer
 	err = run(&buf)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, string(expectedData), buf.String())
 }

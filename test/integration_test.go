@@ -103,7 +103,7 @@ func TestCmdSuccess(t *testing.T) {
 
 			err := cmd.Run()
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.stdout, buf.stdout.String())
 			assert.Empty(t, buf.stderr.String())
 		})
@@ -117,7 +117,7 @@ func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 
 	err := cmd.Run()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "contents\n", buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }
@@ -161,7 +161,7 @@ func TestCmdFail(t *testing.T) {
 
 			err := cmd.Run()
 
-			assert.Error(t, err)
+			require.Error(t, err)
 			assert.Empty(t, buf.stdout.String())
 			assert.Equal(t, tc.stderr, buf.stderr.String())
 		})
@@ -175,7 +175,7 @@ func TestCmdNotesLocation(t *testing.T) {
 
 	err := cmd.Run()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fmt.Sprintf("%q 5\n", LocationFile), buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }
@@ -189,7 +189,7 @@ func TestCmdMultiFiles(t *testing.T) {
 
 		err := cmd.Run()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "location test data\n5th Line\nother 5th Line\n9th Line\n", buf.stdout.String())
 		assert.Empty(t, buf.stderr.String())
 	})
@@ -200,7 +200,7 @@ func TestCmdMultiFiles(t *testing.T) {
 
 		err := cmd.Run()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "# 9th Line\n\nDo not chang the 9th line.\n", buf.stdout.String())
 		assert.Empty(t, buf.stderr.String())
 	})
@@ -211,7 +211,7 @@ func TestCmdMultiFiles(t *testing.T) {
 
 		err := cmd.Run()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 9\n", LocationExtraFile), buf.stdout.String())
 		assert.Empty(t, buf.stderr.String())
 	})
@@ -224,7 +224,7 @@ func TestCmdMultiFiles(t *testing.T) {
 
 		err := cmd.Run()
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Equal(t, "notes file: open invalid_file: no such file or directory\n", buf.stderr.String())
 		assert.Empty(t, buf.stdout.String())
 	})
@@ -238,7 +238,7 @@ func TestUserHomeDirNotExists(t *testing.T) {
 
 	err := cmd.Run()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
 	assert.Equal(t, "notes file name: user home directory: $HOME is not defined\n", buf.stderr.String())
 }
@@ -250,7 +250,7 @@ func TestNotesNotExists(t *testing.T) {
 
 	err := cmd.Run()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Empty(t, buf.stdout.String())
 	assert.Equal(t, "notes file: open not_exists: no such file or directory\n", buf.stderr.String())
 }
@@ -276,7 +276,7 @@ func TestDefaultNoteExists(t *testing.T) {
 	err = cmd.Run()
 
 	// Assert
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "title\n", buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }
@@ -297,7 +297,7 @@ func TestBashScript(t *testing.T) {
 	err = cmd.Run()
 
 	// Assert
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, buf.stdout.String())
 	assert.Empty(t, buf.stderr.String())
 }

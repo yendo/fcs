@@ -27,7 +27,7 @@ func TestWriteTitles(t *testing.T) {
 		var buf bytes.Buffer
 		err := fcqs.WriteTitles(&buf, file)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, test.ExpectedTitles(), buf.String())
 	})
 
@@ -40,7 +40,7 @@ func TestWriteTitles(t *testing.T) {
 		var buf bytes.Buffer
 		err := fcqs.WriteTitles(&buf, file)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek titles: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek titles: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -86,7 +86,7 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				err = fcqs.WriteContents(&buf, file, title, false)
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
 			})
 		}
@@ -107,7 +107,7 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				err = fcqs.WriteContents(&buf, file, title, true)
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tc.contents, buf.String())
 			})
 		}
@@ -143,7 +143,7 @@ func TestWriteNoContents(t *testing.T) {
 			var buf bytes.Buffer
 			err = fcqs.WriteContents(&buf, file, title, false)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Empty(t, buf.String())
 		})
 	}
@@ -159,7 +159,7 @@ func TestWriteNoContents(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteContents(&buf, file, title, false)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -178,7 +178,7 @@ func TestWriteFirstURL(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstURL(&buf, file, title)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
 	})
 
@@ -191,7 +191,7 @@ func TestWriteFirstURL(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstURL(&buf, file, title)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -232,7 +232,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			var buf bytes.Buffer
 			err = fcqs.WriteFirstCmdLineBlock(&buf, file, title)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
 			assert.Equal(t, expected[tc.output], buf.String())
 		})
@@ -249,7 +249,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstCmdLineBlock(&buf, r, title)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -270,7 +270,7 @@ func TestWriteNoteLocation(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 	})
 
@@ -288,7 +288,7 @@ func TestWriteNoteLocation(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
 	})
 }

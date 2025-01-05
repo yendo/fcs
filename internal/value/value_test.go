@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/yendo/fcqs/internal/value"
 )
 
@@ -27,7 +28,7 @@ func TestNewTitle(t *testing.T) {
 
 				title, err := value.NewTitle(tc.title)
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, "title string", title.String())
 			})
 		}
@@ -50,7 +51,7 @@ func TestNewTitle(t *testing.T) {
 
 				title, err := value.NewTitle(tc.title)
 
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.Nil(t, title)
 			})
 		}
