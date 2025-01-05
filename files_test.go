@@ -62,13 +62,24 @@ func TestNewNotesFiles(t *testing.T) {
 	})
 
 	t.Run("default filename", func(t *testing.T) {
+		// Arrange
+		tempHome := t.TempDir()
+		t.Setenv("HOME", tempHome)
 		t.Setenv("FCQS_NOTES_FILE", "")
-		home, err := os.UserHomeDir()
+
+		file := filepath.Join(tempHome, fcqs.DefaultNotesFile)
+		err := os.WriteFile(file, []byte("# title\ncontents\n"), 0o600)
 		require.NoError(t, err)
 
+		home, err := os.UserHomeDir()
+		require.NoError(t, err)
+		require.Equal(t, file, filepath.Join(home, fcqs.DefaultNotesFile))
+
+		// Act
 		notes, err := fcqs.OpenNotesFiles()
 		notes.Close()
 
+		// Assert
 		require.NoError(t, err)
 		assert.NotNil(t, notes.Reader)
 		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), notes.Files[0].Name())
