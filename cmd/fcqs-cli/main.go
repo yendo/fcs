@@ -25,8 +25,6 @@ var (
 )
 
 func run(w io.Writer) error {
-	var err error
-
 	flag.Parse()
 	args := flag.Args()
 
@@ -51,29 +49,27 @@ func run(w io.Writer) error {
 		if *showURL || *showCmd || *showLoc {
 			return ErrInvalidNumberOfArgs
 		}
-		err = fcqs.WriteTitles(w, notes.Reader)
+		return fcqs.WriteTitles(w, notes.Reader)
 	case 1:
-		title, tErr := value.NewTitle(args[0])
-		if tErr != nil {
+		title, err := value.NewTitle(args[0])
+		if err != nil {
 			// This error should be ignored to omit argument checking in shell scripts.
 			return nil
 		}
 
 		switch {
 		case *showURL:
-			err = fcqs.WriteFirstURL(w, notes.Reader, title)
+			return fcqs.WriteFirstURL(w, notes.Reader, title)
 		case *showCmd:
-			err = fcqs.WriteFirstCmdLineBlock(w, notes.Reader, title)
+			return fcqs.WriteFirstCmdLineBlock(w, notes.Reader, title)
 		case *showLoc:
-			err = fcqs.WriteNoteLocation(w, notes.Files, title)
+			return fcqs.WriteNoteLocation(w, notes.Files, title)
 		default:
-			err = fcqs.WriteContents(w, notes.Reader, title, *noTitle)
+			return fcqs.WriteContents(w, notes.Reader, title, *noTitle)
 		}
 	default:
-		err = ErrInvalidNumberOfArgs
+		return ErrInvalidNumberOfArgs
 	}
-
-	return err
 }
 
 func main() {
