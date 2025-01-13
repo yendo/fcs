@@ -17,9 +17,8 @@ import (
 const (
 	DefaultNotesFile = "fcnotes.md"
 
-	codeFence      = "```"
-	atxHeadingChar = "#"
-	shellPrompt    = "$"
+	codeFence   = "```"
+	shellPrompt = "$"
 
 	// State of text line.
 	normal = iota
@@ -30,8 +29,8 @@ const (
 
 // WriteTitles writes the titles of all notes.
 func WriteTitles(w io.Writer, r io.Reader) error {
-	var allTitles []string
-	var title string
+	var allTitles []value.Title
+	var title value.Title
 
 	scanner := bufio.NewScanner(r)
 	state := normal
@@ -44,9 +43,11 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 
 		switch state {
 		case normal:
-			if isTitleLineWithString(line) {
-				title = trimmedTitle(line)
-				continue
+			if titleLine, ok := value.NewTitleLine(line); ok {
+				if titleLine.HasValidTitle() {
+					title = titleLine.Title()
+					continue
+				}
 			}
 
 			if !slices.Contains(allTitles, title) {
@@ -87,9 +88,11 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 				state = fenced
 			}
 
-			if isSearchedTitleLine(line, title) {
-				state = scoped
-				f.write(line)
+			if titleLine, ok := value.NewTitleLine(line); ok {
+				if titleLine.EqualTitle(title) {
+					state = scoped
+					f.write(line)
+				}
 			}
 
 		case fenced:
@@ -98,9 +101,11 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 			}
 
 		case scoped:
-			if isTitleLine(line) && !isSearchedTitleLine(line, title) {
-				state = normal
-				break
+			if titleLine, ok := value.NewTitleLine(line); ok {
+				if !titleLine.EqualTitle(title) {
+					state = normal
+					break
+				}
 			}
 
 			if strings.HasPrefix(line, codeFence) {
@@ -122,47 +127,6 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 
 	f.write("")
 	return nil
-}
-
-// isTitleLine returns if the line is title line.
-func isTitleLine(line string) bool {
-	// Title line must start with #.
-	if !strings.HasPrefix(line, atxHeadingChar) {
-		return false
-	}
-
-	// Blank title is valid.
-	if trimmedTitle(line) == "" {
-		return true
-	}
-
-	// The title line must have a space after #.
-	return strings.HasPrefix(strings.TrimLeft(line, atxHeadingChar), " ")
-}
-
-// isTitleLineWithString returns if the line is title line with string.
-func isTitleLineWithString(line string) bool {
-	// Title line with string should be title line.
-	if !isTitleLine(line) {
-		return false
-	}
-
-	return trimmedTitle(line) != ""
-}
-
-// isSearchedTitleLine returns if the line is the searched title line.
-func isSearchedTitleLine(line string, title *value.Title) bool {
-	// Searched title line should be title line.
-	if !isTitleLine(line) {
-		return false
-	}
-
-	// When the trimmed line and title match, the content starts.
-	return trimmedTitle(line) == title.String()
-}
-
-func trimmedTitle(line string) string {
-	return strings.Trim(line, atxHeadingChar+" ")
 }
 
 // WriteFirstURL writes the first URL in the contents of the note.
@@ -243,9 +207,11 @@ func WriteNoteLocation(w io.Writer, files []*os.File, title *value.Title) error 
 			c++
 			line := scanner.Text()
 
-			if isSearchedTitleLine(line, title) {
-				fmt.Fprintf(w, "%q %d\n", file.Name(), c)
-				break
+			if titleLine, ok := value.NewTitleLine(line); ok {
+				if titleLine.EqualTitle(title) {
+					fmt.Fprintf(w, "%q %d\n", file.Name(), c)
+					break
+				}
 			}
 		}
 		if err := scanner.Err(); err != nil {
