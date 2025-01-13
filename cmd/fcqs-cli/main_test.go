@@ -121,7 +121,7 @@ func TestRunFail(t *testing.T) {
 }
 
 func TestRunMultiFiles(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.LocationFile)+test.FileSeparator()+test.FullPath(test.LocationExtraFile))
+	t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.LocationFile)+string(os.PathListSeparator)+test.FullPath(test.LocationExtraFile))
 
 	t.Run("show titles", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli"})
@@ -155,7 +155,7 @@ func TestRunMultiFiles(t *testing.T) {
 	})
 
 	t.Run("file error", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.LocationFile)+test.FileSeparator()+"invalid_file")
+		t.Setenv("FCQS_NOTES_FILE", test.FullPath(test.LocationFile)+string(os.PathListSeparator)+"invalid_file")
 		setOSArgs(t, []string{"fcqs-cli"})
 
 		var buf bytes.Buffer

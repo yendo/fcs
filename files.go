@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -50,12 +49,7 @@ func notesFileNames() ([]string, error) {
 
 	f := os.Getenv("FCQS_NOTES_FILE")
 	if f != "" {
-		sep := ":"
-		if runtime.GOOS == "windows" {
-			sep = ";"
-		}
-
-		fileNames = strings.Split(f, sep)
+		fileNames = strings.Split(f, string(os.PathListSeparator))
 		return fileNames, nil
 	}
 
