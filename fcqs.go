@@ -22,10 +22,10 @@ const (
 	shellPrompt    = "$"
 
 	// State of text line.
-	Normal = iota
-	Fenced
-	Scoped
-	ScopedFenced
+	normal = iota
+	fenced
+	scoped
+	scopedFenced
 )
 
 // WriteTitles writes the titles of all notes.
@@ -34,7 +34,7 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 	var title string
 
 	scanner := bufio.NewScanner(r)
-	state := Normal
+	state := normal
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -43,7 +43,7 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 		}
 
 		switch state {
-		case Normal:
+		case normal:
 			if isTitleLineWithString(line) {
 				title = trimmedTitle(line)
 				continue
@@ -55,12 +55,12 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 			}
 
 			if strings.HasPrefix(line, codeFence) {
-				state = Fenced
+				state = fenced
 			}
 
-		case Fenced:
+		case fenced:
 			if strings.HasPrefix(line, codeFence) {
-				state = Normal
+				state = normal
 			}
 		}
 	}
@@ -73,54 +73,54 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool) error {
-	state := Normal
+	state := normal
 
-	f := NewFilter(w, isNoTitle)
+	f := newFilter(w, isNoTitle)
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		switch state {
-		case Normal:
+		case normal:
 			if strings.HasPrefix(line, codeFence) {
-				state = Fenced
+				state = fenced
 			}
 
 			if isSearchedTitleLine(line, title) {
-				state = Scoped
-				f.Write(line)
+				state = scoped
+				f.write(line)
 			}
 
-		case Fenced:
+		case fenced:
 			if strings.HasPrefix(line, codeFence) {
-				state = Normal
+				state = normal
 			}
 
-		case Scoped:
+		case scoped:
 			if isTitleLine(line) && !isSearchedTitleLine(line, title) {
-				state = Normal
+				state = normal
 				break
 			}
 
 			if strings.HasPrefix(line, codeFence) {
-				state = ScopedFenced
+				state = scopedFenced
 			}
 
-			f.Write(line)
+			f.write(line)
 
-		case ScopedFenced:
+		case scopedFenced:
 			if strings.HasPrefix(line, codeFence) {
-				state = Scoped
+				state = scoped
 			}
-			f.Write(line)
+			f.write(line)
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("seek contents: %w", err)
 	}
 
-	f.Write("")
+	f.write("")
 	return nil
 }
 
@@ -184,7 +184,7 @@ func WriteFirstURL(w io.Writer, r io.Reader, title *value.Title) error {
 
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
 func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error {
-	state := Normal
+	state := normal
 
 	var buf bytes.Buffer
 	if err := WriteContents(&buf, r, title, false); err != nil {
@@ -196,12 +196,12 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 		line := scanner.Text()
 
 		switch state {
-		case Normal:
+		case normal:
 			if isShellCodeBlockBegin(line) {
-				state = Fenced
+				state = fenced
 			}
 
-		case Fenced:
+		case fenced:
 			if strings.HasPrefix(line, codeFence) {
 				break
 			}

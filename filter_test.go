@@ -1,4 +1,4 @@
-package fcqs_test
+package fcqs
 
 import (
 	"bufio"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/yendo/fcqs"
 )
 
 func TestFilterWriter(t *testing.T) {
@@ -36,18 +35,18 @@ func TestFilterWriter(t *testing.T) {
 			t.Parallel()
 
 			var buf bytes.Buffer
-			f := fcqs.NewFilter(&buf, tc.isRemoveHead)
+			f := newFilter(&buf, tc.isRemoveHead)
 
 			file := strings.NewReader(tc.input)
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
 				line := scanner.Text()
-				f.Write(line)
+				f.write(line)
 			}
 			err := scanner.Err()
 			require.NoError(t, err)
 
-			f.Write("")
+			f.write("")
 
 			assert.Equal(t, tc.output, buf.String())
 		})
