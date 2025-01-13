@@ -14,19 +14,24 @@ import (
 
 const defaultNotesFile = "fcnotes.md"
 
-type stdBuf struct {
+type testCmd struct {
+	cmd    *exec.Cmd
 	stdout bytes.Buffer
 	stderr bytes.Buffer
 }
 
-func (b *stdBuf) newTestCmd(args ...string) *exec.Cmd {
+func (c *testCmd) run() error {
+	c.cmd.Stdout = &c.stdout
+	c.cmd.Stderr = &c.stderr
+
+	return c.cmd.Run()
+}
+
+func newTestCmd(args ...string) *testCmd {
 	cmd := exec.Command("./fcqs-cli", args...)
-
 	cmd.Env = append(os.Environ(), "GOCOVERDIR=../coverdir")
-	cmd.Stdout = &b.stdout
-	cmd.Stderr = &b.stderr
 
-	return cmd
+	return &testCmd{cmd: cmd}
 }
 
 func TestCmdSuccess(t *testing.T) {
@@ -98,28 +103,25 @@ func TestCmdSuccess(t *testing.T) {
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
-			buf := &stdBuf{}
-			cmd := buf.newTestCmd(tc.options...)
+			cmd := newTestCmd(tc.options...)
+			err := cmd.run()
 
-			err := cmd.Run()
-
-			assert.NoError(t, err)
-			assert.Equal(t, tc.stdout, buf.stdout.String())
-			assert.Empty(t, buf.stderr.String())
+			require.NoError(t, err)
+			assert.Equal(t, tc.stdout, cmd.stdout.String())
+			assert.Empty(t, cmd.stderr.String())
 		})
 	}
 }
 
 func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", NotesFile)
-	buf := &stdBuf{}
-	cmd := buf.newTestCmd("-t", "There can be no blank line")
 
-	err := cmd.Run()
+	cmd := newTestCmd("-t", "There can be no blank line")
+	err := cmd.run()
 
-	assert.NoError(t, err)
-	assert.Equal(t, "contents\n", buf.stdout.String())
-	assert.Empty(t, buf.stderr.String())
+	require.NoError(t, err)
+	assert.Equal(t, "contents\n", cmd.stdout.String())
+	assert.Empty(t, cmd.stderr.String())
 }
 
 func TestCmdFail(t *testing.T) {
@@ -156,103 +158,90 @@ func TestCmdFail(t *testing.T) {
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
-			buf := &stdBuf{}
-			cmd := buf.newTestCmd(tc.options...)
+			cmd := newTestCmd(tc.options...)
+			err := cmd.run()
 
-			err := cmd.Run()
-
-			assert.Error(t, err)
-			assert.Empty(t, buf.stdout.String())
-			assert.Equal(t, tc.stderr, buf.stderr.String())
+			require.Error(t, err)
+			assert.Empty(t, cmd.stdout.String())
+			assert.Equal(t, tc.stderr, cmd.stderr.String())
 		})
 	}
 }
 
 func TestCmdNotesLocation(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", LocationFile)
-	buf := &stdBuf{}
-	cmd := buf.newTestCmd("-l", "5th Line")
 
-	err := cmd.Run()
+	cmd := newTestCmd("-l", "5th Line")
+	err := cmd.run()
 
-	assert.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf("%q 5\n", LocationFile), buf.stdout.String())
-	assert.Empty(t, buf.stderr.String())
+	require.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf("%q 5\n", LocationFile), cmd.stdout.String())
+	assert.Empty(t, cmd.stderr.String())
 }
 
 func TestCmdMultiFiles(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", LocationFile+FileSeparator()+LocationExtraFile)
+	t.Setenv("FCQS_NOTES_FILE", LocationFile+string(os.PathListSeparator)+LocationExtraFile)
 
 	t.Run("show titles", func(t *testing.T) {
-		buf := &stdBuf{}
-		cmd := buf.newTestCmd()
+		cmd := newTestCmd()
+		err := cmd.run()
 
-		err := cmd.Run()
-
-		assert.NoError(t, err)
-		assert.Equal(t, "location test data\n5th Line\nother 5th Line\n9th Line\n", buf.stdout.String())
-		assert.Empty(t, buf.stderr.String())
+		require.NoError(t, err)
+		assert.Equal(t, "location test data\n5th Line\nother 5th Line\n9th Line\n", cmd.stdout.String())
+		assert.Empty(t, cmd.stderr.String())
 	})
 
 	t.Run("show contents", func(t *testing.T) {
-		buf := &stdBuf{}
-		cmd := buf.newTestCmd("9th Line")
+		cmd := newTestCmd("9th Line")
+		err := cmd.run()
 
-		err := cmd.Run()
-
-		assert.NoError(t, err)
-		assert.Equal(t, "# 9th Line\n\nDo not chang the 9th line.\n", buf.stdout.String())
-		assert.Empty(t, buf.stderr.String())
+		require.NoError(t, err)
+		assert.Equal(t, "# 9th Line\n\nDo not chang the 9th line.\n", cmd.stdout.String())
+		assert.Empty(t, cmd.stderr.String())
 	})
 
 	t.Run("show location", func(t *testing.T) {
-		buf := &stdBuf{}
-		cmd := buf.newTestCmd("-l", "9th Line")
+		cmd := newTestCmd("-l", "9th Line")
+		err := cmd.run()
 
-		err := cmd.Run()
-
-		assert.NoError(t, err)
-		assert.Equal(t, fmt.Sprintf("%q 9\n", LocationExtraFile), buf.stdout.String())
-		assert.Empty(t, buf.stderr.String())
+		require.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("%q 9\n", LocationExtraFile), cmd.stdout.String())
+		assert.Empty(t, cmd.stderr.String())
 	})
 
 	t.Run("file error", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", LocationFile+FileSeparator()+"invalid_file")
+		t.Setenv("FCQS_NOTES_FILE", LocationFile+string(os.PathListSeparator)+"invalid_file")
 
-		buf := &stdBuf{}
-		cmd := buf.newTestCmd()
+		cmd := newTestCmd()
+		err := cmd.run()
 
-		err := cmd.Run()
-
-		assert.Error(t, err)
-		assert.Equal(t, "notes file: open invalid_file: no such file or directory\n", buf.stderr.String())
-		assert.Empty(t, buf.stdout.String())
+		require.Error(t, err)
+		assert.Equal(t, "notes file: open invalid_file: no such file or directory\n", cmd.stderr.String())
+		assert.Empty(t, cmd.stdout.String())
 	})
 }
 
 func TestUserHomeDirNotExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "")
 	t.Setenv("HOME", "")
-	buf := &stdBuf{}
-	cmd := buf.newTestCmd()
 
-	err := cmd.Run()
+	cmd := newTestCmd()
+	err := cmd.run()
 
-	assert.Error(t, err)
-	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "notes file name: user home directory: $HOME is not defined\n", buf.stderr.String())
+	require.Error(t, err)
+	assert.Empty(t, cmd.stdout.String())
+	assert.Equal(t, "notes file name: user home directory: $HOME is not defined\n", cmd.stderr.String())
 }
 
 func TestNotesNotExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "not_exists")
-	buf := &stdBuf{}
-	cmd := buf.newTestCmd()
 
-	err := cmd.Run()
+	cmd := newTestCmd()
+	err := cmd.run()
 
-	assert.Error(t, err)
-	assert.Empty(t, buf.stdout.String())
-	assert.Equal(t, "notes file: open not_exists: no such file or directory\n", buf.stderr.String())
+	require.Error(t, err)
+	assert.Empty(t, cmd.stdout.String())
+	assert.Equal(t, "notes file: open not_exists: no such file or directory\n", cmd.stderr.String())
 }
 
 func TestDefaultNoteExists(t *testing.T) {
@@ -269,16 +258,14 @@ func TestDefaultNoteExists(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, file, filepath.Join(home, defaultNotesFile))
 
-	buf := &stdBuf{}
-	cmd := buf.newTestCmd()
-
 	// Act
-	err = cmd.Run()
+	cmd := newTestCmd()
+	err = cmd.run()
 
 	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, "title\n", buf.stdout.String())
-	assert.Empty(t, buf.stderr.String())
+	require.NoError(t, err)
+	assert.Equal(t, "title\n", cmd.stdout.String())
+	assert.Empty(t, cmd.stderr.String())
 }
 
 func TestBashScript(t *testing.T) {
@@ -290,14 +277,12 @@ func TestBashScript(t *testing.T) {
 	require.NoError(t, err)
 	expected := string(data)
 
-	buf := &stdBuf{}
-	cmd := buf.newTestCmd("--bash")
-
 	// Act
-	err = cmd.Run()
+	cmd := newTestCmd("--bash")
+	err = cmd.run()
 
 	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, expected, buf.stdout.String())
-	assert.Empty(t, buf.stderr.String())
+	require.NoError(t, err)
+	assert.Equal(t, expected, cmd.stdout.String())
+	assert.Empty(t, cmd.stderr.String())
 }

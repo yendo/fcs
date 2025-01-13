@@ -5,15 +5,15 @@ import (
 	"io"
 )
 
-type Filter struct {
+type filter struct {
 	WriteBuf     io.Writer
 	IsRemoveHead bool
 	isDoneTitle  bool
 	prevLine     *string
 }
 
-// Write writes filtered lines.
-func (f *Filter) Write(text string) {
+// write writes filtered lines.
+func (f *filter) write(text string) {
 	if f.prevLine == nil {
 		// Remove first non blank lines.
 		if f.IsRemoveHead && !f.isDoneTitle {
@@ -37,6 +37,6 @@ func (f *Filter) Write(text string) {
 	f.prevLine = &text
 }
 
-func NewFilter(w io.Writer, isRemoveHead bool) Filter {
-	return Filter{WriteBuf: w, IsRemoveHead: isRemoveHead}
+func newFilter(w io.Writer, isRemoveHead bool) filter {
+	return filter{WriteBuf: w, IsRemoveHead: isRemoveHead}
 }

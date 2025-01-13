@@ -11,17 +11,31 @@ import (
 )
 
 const (
-	NotesFile         = "testdata/test_fcnotes.md"
-	ShellBlockFile    = "testdata/test_shellblock.md"
-	LocationFile      = "testdata/test_location.md"
-	LocationExtraFile = "testdata/test_location_extra.md"
+	notesFile         = "testdata/test_fcnotes.md"
+	shellBlockFile    = "testdata/test_shellblock.md"
+	locationFile      = "testdata/test_location.md"
+	locationExtraFile = "testdata/test_location_extra.md"
 )
+
+var (
+	NotesFile         string
+	ShellBlockFile    string
+	LocationFile      string
+	LocationExtraFile string
+)
+
+func init() {
+	NotesFile = fullPath(notesFile)
+	ShellBlockFile = fullPath(shellBlockFile)
+	LocationFile = fullPath(locationFile)
+	LocationExtraFile = fullPath(locationExtraFile)
+}
 
 // OpenTestNotesFile opens a test notes file.
 func OpenTestNotesFile(t *testing.T, filename string) *os.File {
 	t.Helper()
 
-	file, err := os.Open(FullPath(filename))
+	file, err := os.Open(filename)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
@@ -32,20 +46,11 @@ func OpenTestNotesFile(t *testing.T, filename string) *os.File {
 	return file
 }
 
-// FullPath returns a full path of test note file.
-func FullPath(filename string) string {
+// fullPath returns a full path of test note file.
+func fullPath(filename string) string {
 	_, thisFileName, _, _ := runtime.Caller(0)
 
 	return filepath.Join(path.Dir(thisFileName), filename)
-}
-
-func FileSeparator() string {
-	sep := ":"
-	if runtime.GOOS == "windows" {
-		sep = ";"
-	}
-
-	return sep
 }
 
 // ExpectedTitles returns the titles of the test notes.

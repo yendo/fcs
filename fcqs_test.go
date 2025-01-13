@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -28,7 +27,7 @@ func TestWriteTitles(t *testing.T) {
 		var buf bytes.Buffer
 		err := fcqs.WriteTitles(&buf, file)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, test.ExpectedTitles(), buf.String())
 	})
 
@@ -41,7 +40,7 @@ func TestWriteTitles(t *testing.T) {
 		var buf bytes.Buffer
 		err := fcqs.WriteTitles(&buf, file)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek titles: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek titles: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -87,7 +86,7 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				err = fcqs.WriteContents(&buf, file, title, false)
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tc.title+"\n"+tc.contents, buf.String())
 			})
 		}
@@ -108,7 +107,7 @@ func TestWriteContents(t *testing.T) {
 				var buf bytes.Buffer
 				err = fcqs.WriteContents(&buf, file, title, true)
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tc.contents, buf.String())
 			})
 		}
@@ -144,7 +143,7 @@ func TestWriteNoContents(t *testing.T) {
 			var buf bytes.Buffer
 			err = fcqs.WriteContents(&buf, file, title, false)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Empty(t, buf.String())
 		})
 	}
@@ -160,7 +159,7 @@ func TestWriteNoContents(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteContents(&buf, file, title, false)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -179,7 +178,7 @@ func TestWriteFirstURL(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstURL(&buf, file, title)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "http://github.com/yendo/fcqs/\n", buf.String())
 	})
 
@@ -192,7 +191,7 @@ func TestWriteFirstURL(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstURL(&buf, file, title)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -233,7 +232,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			var buf bytes.Buffer
 			err = fcqs.WriteFirstCmdLineBlock(&buf, file, title)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			expected := map[bool]string{true: "ls -l | nl\n", false: ""}
 			assert.Equal(t, expected[tc.output], buf.String())
 		})
@@ -250,7 +249,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstCmdLineBlock(&buf, r, title)
 
-		assert.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
+		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", errStr))
 		assert.Empty(t, buf.String())
 	})
 }
@@ -271,7 +270,7 @@ func TestWriteNoteLocation(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 5\n", testFile.Name()), buf.String())
 	})
 
@@ -289,51 +288,7 @@ func TestWriteNoteLocation(t *testing.T) {
 		var buf bytes.Buffer
 		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
 
-		assert.NoError(t, err)
-		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
-	})
-}
-
-func TestNotesFileName(t *testing.T) {
-	t.Run("failed to access user home directory", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", "")
-		t.Setenv("HOME", "")
-
-		fileName, err := fcqs.NotesFileName()
-
-		assert.Empty(t, fileName)
-		assert.Error(t, err)
-		assert.EqualError(t, err, "user home directory: $HOME is not defined")
-	})
-
-	t.Run("set a file from environment variable", func(t *testing.T) {
-		expectedFileName := "test_file_from_env.md"
-		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
-
-		fileName, err := fcqs.NotesFileName()
-
-		assert.NoError(t, err)
-		assert.Equal(t, expectedFileName, fileName[0])
-	})
-
-	t.Run("set files from environment variable", func(t *testing.T) {
-		expectedFileNames := []string{"test_file_1.md", "test_file_2.md", "test_file_3.md"}
-		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, test.FileSeparator()))
-
-		fileName, err := fcqs.NotesFileName()
-
-		assert.NoError(t, err)
-		assert.ElementsMatch(t, expectedFileNames, fileName)
-	})
-
-	t.Run("default filename", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", "")
-		home, err := os.UserHomeDir()
 		require.NoError(t, err)
-
-		filename, err := fcqs.NotesFileName()
-
-		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(home, fcqs.DefaultNotesFile), filename[0])
+		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
 	})
 }

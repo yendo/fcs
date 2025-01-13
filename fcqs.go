@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 
@@ -16,14 +14,18 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
-const DefaultNotesFile = "fcnotes.md"
-
-// State of text line.
 const (
-	Normal = iota
-	Fenced
-	Scoped
-	ScopedFenced
+	DefaultNotesFile = "fcnotes.md"
+
+	codeFence      = "```"
+	atxHeadingChar = "#"
+	shellPrompt    = "$"
+
+	// State of text line.
+	normal = iota
+	fenced
+	scoped
+	scopedFenced
 )
 
 // WriteTitles writes the titles of all notes.
@@ -32,29 +34,33 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 	var title string
 
 	scanner := bufio.NewScanner(r)
-	state := Normal
+	state := normal
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		if line == "" {
+			continue
+		}
 
 		switch state {
-		case Normal:
-			if isTitleLine(line) {
-				title = strings.Trim(line, "# ")
-			} else if line != "" {
-				if title != "" && !slices.Contains(allTitles, title) {
-					fmt.Fprintln(w, title)
-					allTitles = append(allTitles, title)
-				}
-
-				if strings.HasPrefix(line, "```") {
-					state = Fenced
-				}
+		case normal:
+			if isTitleLineWithString(line) {
+				title = trimmedTitle(line)
+				continue
 			}
 
-		case Fenced:
-			if strings.HasPrefix(line, "```") {
-				state = Normal
+			if !slices.Contains(allTitles, title) {
+				fmt.Fprintln(w, title)
+				allTitles = append(allTitles, title)
+			}
+
+			if strings.HasPrefix(line, codeFence) {
+				state = fenced
+			}
+
+		case fenced:
+			if strings.HasPrefix(line, codeFence) {
+				state = normal
 			}
 		}
 	}
@@ -67,71 +73,81 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool) error {
-	state := Normal
+	state := normal
 
-	f := NewFilter(w, isNoTitle)
+	f := newFilter(w, isNoTitle)
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		switch state {
-		case Normal:
-			if strings.HasPrefix(line, "```") {
-				state = Fenced
+		case normal:
+			if strings.HasPrefix(line, codeFence) {
+				state = fenced
 			}
 
 			if isSearchedTitleLine(line, title) {
-				state = Scoped
-				f.Write(line)
+				state = scoped
+				f.write(line)
 			}
 
-		case Fenced:
-			if strings.HasPrefix(line, "```") {
-				state = Normal
+		case fenced:
+			if strings.HasPrefix(line, codeFence) {
+				state = normal
 			}
 
-		case Scoped:
+		case scoped:
 			if isTitleLine(line) && !isSearchedTitleLine(line, title) {
-				state = Normal
+				state = normal
 				break
 			}
 
-			if strings.HasPrefix(line, "```") {
-				state = ScopedFenced
+			if strings.HasPrefix(line, codeFence) {
+				state = scopedFenced
 			}
 
-			f.Write(line)
+			f.write(line)
 
-		case ScopedFenced:
-			if strings.HasPrefix(line, "```") {
-				state = Scoped
+		case scopedFenced:
+			if strings.HasPrefix(line, codeFence) {
+				state = scoped
 			}
-			f.Write(line)
+			f.write(line)
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("seek contents: %w", err)
 	}
 
-	f.Write("")
+	f.write("")
 	return nil
 }
 
 // isTitleLine returns if the line is title line.
 func isTitleLine(line string) bool {
 	// Title line must start with #.
-	if !strings.HasPrefix(line, "#") {
+	if !strings.HasPrefix(line, atxHeadingChar) {
 		return false
 	}
 
 	// Blank title is valid.
-	if strings.TrimLeft(line, "# ") == "" {
+	if trimmedTitle(line) == "" {
 		return true
 	}
 
 	// The title line must have a space after #.
-	return strings.HasPrefix(strings.TrimLeft(line, "#"), " ")
+	return strings.HasPrefix(strings.TrimLeft(line, atxHeadingChar), " ")
+}
+
+// isTitleLineWithString returns if the line is title line with string.
+func isTitleLineWithString(line string) bool {
+	// Title line with string should be title line.
+	if !isTitleLine(line) {
+		return false
+	}
+
+	return trimmedTitle(line) != ""
 }
 
 // isSearchedTitleLine returns if the line is the searched title line.
@@ -142,7 +158,11 @@ func isSearchedTitleLine(line string, title *value.Title) bool {
 	}
 
 	// When the trimmed line and title match, the content starts.
-	return strings.Trim(line, "# ") == title.String()
+	return trimmedTitle(line) == title.String()
+}
+
+func trimmedTitle(line string) string {
+	return strings.Trim(line, atxHeadingChar+" ")
 }
 
 // WriteFirstURL writes the first URL in the contents of the note.
@@ -164,7 +184,7 @@ func WriteFirstURL(w io.Writer, r io.Reader, title *value.Title) error {
 
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
 func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error {
-	state := Normal
+	state := normal
 
 	var buf bytes.Buffer
 	if err := WriteContents(&buf, r, title, false); err != nil {
@@ -176,16 +196,16 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 		line := scanner.Text()
 
 		switch state {
-		case Normal:
+		case normal:
 			if isShellCodeBlockBegin(line) {
-				state = Fenced
+				state = fenced
 			}
 
-		case Fenced:
-			if strings.HasPrefix(line, "```") {
+		case fenced:
+			if strings.HasPrefix(line, codeFence) {
 				break
 			}
-			fmt.Fprintln(w, strings.TrimLeft(line, "$ "))
+			fmt.Fprintln(w, strings.TrimLeft(line, shellPrompt+" "))
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -195,7 +215,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 	return nil
 }
 
-var reShellCodeBlock = regexp.MustCompile("^```+\\s*(\\S+).*$")
+var reShellCodeBlock = regexp.MustCompile(fmt.Sprintf("^%s+\\s*(\\S+).*$", codeFence))
 
 // isShellCodeBlockBegin determines if the line is the beginning of a shell code block.
 func isShellCodeBlockBegin(line string) bool {
@@ -233,28 +253,4 @@ func WriteNoteLocation(w io.Writer, files []*os.File, title *value.Title) error 
 		}
 	}
 	return nil
-}
-
-// NotesFileName returns the filename of the notes.
-func NotesFileName() ([]string, error) {
-	var fileNames []string
-
-	f := os.Getenv("FCQS_NOTES_FILE")
-	if f != "" {
-		sep := ":"
-		if runtime.GOOS == "windows" {
-			sep = ";"
-		}
-
-		fileNames = strings.Split(f, sep)
-		return fileNames, nil
-	}
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("user home directory: %w", err)
-	}
-
-	fileNames = append(fileNames, filepath.Join(home, DefaultNotesFile))
-	return fileNames, nil
 }
