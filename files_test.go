@@ -25,7 +25,7 @@ func TestNewNotesFiles(t *testing.T) {
 	})
 
 	t.Run("failed to access notes file", func(t *testing.T) {
-		expectedFileName := test.FullPath(test.NotesFile) + string(os.PathListSeparator) + "invalid_file"
+		expectedFileName := test.NotesFile + string(os.PathListSeparator) + "invalid_file"
 		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
 
 		notes, err := fcqs.OpenNotesFiles()
@@ -36,7 +36,7 @@ func TestNewNotesFiles(t *testing.T) {
 	})
 
 	t.Run("set a file from environment variable", func(t *testing.T) {
-		expectedFileName := test.FullPath(test.NotesFile)
+		expectedFileName := test.NotesFile
 		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
 
 		notes, err := fcqs.OpenNotesFiles()
@@ -48,7 +48,7 @@ func TestNewNotesFiles(t *testing.T) {
 	})
 
 	t.Run("set files from environment variable", func(t *testing.T) {
-		expectedFileNames := []string{test.FullPath(test.NotesFile), test.FullPath(test.LocationFile), test.FullPath(test.LocationExtraFile)}
+		expectedFileNames := []string{test.NotesFile, test.LocationFile, test.LocationExtraFile}
 		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, string(os.PathListSeparator)))
 
 		notes, err := fcqs.OpenNotesFiles()
