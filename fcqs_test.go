@@ -16,13 +16,28 @@ import (
 	"github.com/yendo/fcqs/test"
 )
 
+// openTestNotesFile opens a test notes file.
+func openTestNotesFile(t *testing.T, filename string) *os.File {
+	t.Helper()
+
+	file, err := os.Open(filename)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err := file.Close()
+		require.NoError(t, err)
+	})
+
+	return file
+}
+
 func TestWriteTitles(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success to output titles", func(t *testing.T) {
 		t.Parallel()
 
-		file := test.OpenTestNotesFile(t, test.NotesFile)
+		file := openTestNotesFile(t, test.NotesFile)
 
 		var buf bytes.Buffer
 		err := fcqs.WriteTitles(&buf, file)
@@ -78,7 +93,7 @@ func TestWriteContents(t *testing.T) {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
 
-				file := test.OpenTestNotesFile(t, test.NotesFile)
+				file := openTestNotesFile(t, test.NotesFile)
 				titleStr := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 				title, err := value.NewTitle(titleStr)
 				require.NoError(t, err)
@@ -99,7 +114,7 @@ func TestWriteContents(t *testing.T) {
 			t.Run(tc.title, func(t *testing.T) {
 				t.Parallel()
 
-				file := test.OpenTestNotesFile(t, test.NotesFile)
+				file := openTestNotesFile(t, test.NotesFile)
 				titleStr := strings.TrimRight(strings.TrimLeft(tc.title, "# "), "\n")
 				title, err := value.NewTitle(titleStr)
 				require.NoError(t, err)
@@ -135,7 +150,7 @@ func TestWriteNoContents(t *testing.T) {
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
-			file := test.OpenTestNotesFile(t, test.NotesFile)
+			file := openTestNotesFile(t, test.NotesFile)
 			titleStr := strings.TrimLeft(tc.title, "#")
 			title, err := value.NewTitle(titleStr)
 			require.NoError(t, err)
@@ -173,7 +188,7 @@ func TestWriteFirstURL(t *testing.T) {
 	t.Run("scan succeeded", func(t *testing.T) {
 		t.Parallel()
 
-		file := test.OpenTestNotesFile(t, test.NotesFile)
+		file := openTestNotesFile(t, test.NotesFile)
 
 		var buf bytes.Buffer
 		err = fcqs.WriteFirstURL(&buf, file, title)
@@ -225,7 +240,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		t.Run(tc.title, func(t *testing.T) {
 			t.Parallel()
 
-			file := test.OpenTestNotesFile(t, test.ShellBlockFile)
+			file := openTestNotesFile(t, test.ShellBlockFile)
 			title, err := value.NewTitle(tc.title)
 			require.NoError(t, err)
 
@@ -261,7 +276,7 @@ func TestWriteNoteLocation(t *testing.T) {
 		t.Parallel()
 
 		var testFiles []*os.File
-		testFile := test.OpenTestNotesFile(t, test.LocationFile)
+		testFile := openTestNotesFile(t, test.LocationFile)
 		testFiles = append(testFiles, testFile)
 
 		title, err := value.NewTitle("5th Line")
@@ -278,8 +293,8 @@ func TestWriteNoteLocation(t *testing.T) {
 		t.Parallel()
 
 		var testFiles []*os.File
-		testFile1 := test.OpenTestNotesFile(t, test.LocationFile)
-		testFile2 := test.OpenTestNotesFile(t, test.LocationExtraFile)
+		testFile1 := openTestNotesFile(t, test.LocationFile)
+		testFile2 := openTestNotesFile(t, test.LocationExtraFile)
 		testFiles = append(testFiles, testFile1, testFile2)
 
 		title, err := value.NewTitle("9th Line")
