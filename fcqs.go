@@ -74,9 +74,10 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 
 // WriteContents writes the contents of the note.
 func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool) error {
-	state := normal
-
 	f := newFilter(w, isNoTitle)
+	defer f.Close()
+
+	state := normal
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
@@ -91,7 +92,7 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 			if titleLine, ok := value.NewTitleLine(line); ok {
 				if titleLine.EqualTitle(title) {
 					state = scoped
-					f.write(line)
+					fmt.Fprint(f, line)
 				}
 			}
 
@@ -112,20 +113,19 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 				state = scopedFenced
 			}
 
-			f.write(line)
+			fmt.Fprint(f, line)
 
 		case scopedFenced:
 			if strings.HasPrefix(line, codeFence) {
 				state = scoped
 			}
-			f.write(line)
+			fmt.Fprint(f, line)
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("seek contents: %w", err)
 	}
 
-	f.write("")
 	return nil
 }
 
