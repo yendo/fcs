@@ -135,9 +135,8 @@ func WriteFirstURL(w io.Writer, r io.Reader, title *value.Title) error {
 	}
 
 	rxStrict := xurls.Strict()
-	url := rxStrict.FindString(buf.String())
 
-	if url != "" {
+	if url := rxStrict.FindString(buf.String()); url != "" {
 		fmt.Fprintln(w, url)
 	}
 
