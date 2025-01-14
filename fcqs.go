@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -17,7 +16,6 @@ import (
 const (
 	DefaultNotesFile = "fcnotes.md"
 
-	codeFence   = "```"
 	shellPrompt = "$"
 
 	// State of text line.
@@ -55,12 +53,12 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 				allTitles = append(allTitles, title)
 			}
 
-			if strings.HasPrefix(line, codeFence) {
+			if value.IsFenceLine(line) {
 				state = fenced
 			}
 
 		case fenced:
-			if strings.HasPrefix(line, codeFence) {
+			if value.IsFenceLine(line) {
 				state = normal
 			}
 		}
@@ -85,7 +83,7 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 
 		switch state {
 		case normal:
-			if strings.HasPrefix(line, codeFence) {
+			if value.IsFenceLine(line) {
 				state = fenced
 			}
 
@@ -97,7 +95,7 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 			}
 
 		case fenced:
-			if strings.HasPrefix(line, codeFence) {
+			if value.IsFenceLine(line) {
 				state = normal
 			}
 
@@ -109,14 +107,14 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 				}
 			}
 
-			if strings.HasPrefix(line, codeFence) {
+			if value.IsFenceLine(line) {
 				state = scopedFenced
 			}
 
 			fmt.Fprint(f, line)
 
 		case scopedFenced:
-			if strings.HasPrefix(line, codeFence) {
+			if value.IsFenceLine(line) {
 				state = scoped
 			}
 			fmt.Fprint(f, line)
@@ -158,15 +156,16 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		fenceLine, isFenceLine := value.NewFenceLine(line)
 
 		switch state {
 		case normal:
-			if isShellCodeBlockBegin(line) {
+			if isFenceLine && fenceLine.HasShellID() {
 				state = fenced
 			}
 
 		case fenced:
-			if strings.HasPrefix(line, codeFence) {
+			if isFenceLine {
 				break
 			}
 			fmt.Fprintln(w, strings.TrimLeft(line, shellPrompt+" "))
@@ -177,24 +176,6 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 	}
 
 	return nil
-}
-
-var reShellCodeBlock = regexp.MustCompile(fmt.Sprintf("^%s+\\s*(\\S+).*$", codeFence))
-
-// isShellCodeBlockBegin determines if the line is the beginning of a shell code block.
-func isShellCodeBlockBegin(line string) bool {
-	shellList := []string{
-		"shell", "sh", "shell-script", "bash", "zsh",
-		"powershell", "posh", "pwsh",
-		"shellsession", "console",
-	}
-
-	match := reShellCodeBlock.FindStringSubmatch(line)
-	if len(match) == 0 {
-		return false
-	}
-
-	return slices.Contains(shellList, match[1])
 }
 
 // WriteNoteLocation writes the file name and line number of the note.
