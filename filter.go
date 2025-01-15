@@ -5,15 +5,16 @@ import (
 	"io"
 )
 
+// filter represents filter that eliminates unnecessary lines.
 type filter struct {
 	WriteBuf     io.Writer
 	IsRemoveHead bool
 	isDoneTitle  bool
-	prevLine     *string
+	prevLine     []byte
 }
 
-// write writes filtered lines.
-func (f *filter) write(text string) {
+// Write writes filtered lines.
+func (f *filter) Write(p []byte) (n int, err error) {
 	if f.prevLine == nil {
 		// Remove first non blank lines.
 		if f.IsRemoveHead && !f.isDoneTitle {
@@ -22,21 +23,42 @@ func (f *filter) write(text string) {
 		}
 
 		// Remove first blank lines.
-		if text != "" {
-			f.prevLine = &text
+		if len(p) != 0 {
+			f.prevLine = make([]byte, len(p), len(p)+1) // cap for LF
+			copy(f.prevLine, p)
 		}
 		return
 	}
 
 	// Remove consecutive blank lines
-	if *f.prevLine == "" && text == "" {
+	if len(f.prevLine) == 0 && len(p) == 0 {
 		return
 	}
 
-	fmt.Fprintln(f.WriteBuf, *f.prevLine)
-	f.prevLine = &text
+	// Add line feed
+	f.prevLine = append(f.prevLine, '\n')
+
+	n, err = f.WriteBuf.Write(f.prevLine)
+	if err != nil {
+		return
+	}
+	if n != len(f.prevLine) {
+		err = io.ErrShortWrite
+		return
+	}
+
+	f.prevLine = make([]byte, len(p), len(p)+1) // cap for LF
+	copy(f.prevLine, p)
+
+	return len(f.prevLine), nil
 }
 
-func newFilter(w io.Writer, isRemoveHead bool) filter {
-	return filter{WriteBuf: w, IsRemoveHead: isRemoveHead}
+// Close closes the filter.
+func (f *filter) Close() {
+	fmt.Fprint(f, "")
+}
+
+// newFilter returns a filter.
+func newFilter(w io.Writer, isRemoveHead bool) *filter {
+	return &filter{WriteBuf: w, IsRemoveHead: isRemoveHead}
 }

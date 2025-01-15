@@ -3,6 +3,7 @@ package fcqs_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 
@@ -42,14 +43,65 @@ func TestFilterWriter(t *testing.T) {
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
 				line := scanner.Text()
-				fcqs.ExportFilterWrite(&f, line)
+				_, err := f.Write([]byte(line))
+				require.NoError(t, err)
 			}
+			f.Close()
+
 			err := scanner.Err()
 			require.NoError(t, err)
-
-			fcqs.ExportFilterWrite(&f, "")
-
 			assert.Equal(t, tc.output, buf.String())
 		})
 	}
+}
+
+// writerMock represents a mock for io.Writer.
+type writerMock struct {
+	num int
+	err error
+}
+
+func (w writerMock) Write(_ []byte) (n int, err error) {
+	return w.num, w.err
+}
+
+func TestFilterWriterError(t *testing.T) {
+	t.Parallel()
+
+	outputText := "second line"
+
+	t.Run("Writer returns write err", func(t *testing.T) {
+		t.Parallel()
+
+		writeErr := "write error"
+		textLen := len(outputText)
+		buf := &writerMock{num: textLen, err: errors.New(writeErr)}
+
+		f := fcqs.ExportNewFilter(buf, false)
+		_, err := f.Write([]byte("first line"))
+		require.NoError(t, err)
+
+		n, err := f.Write([]byte(outputText))
+		require.Error(t, err)
+
+		assert.Equal(t, textLen, n)
+		assert.EqualError(t, err, writeErr)
+	})
+
+	t.Run("Writer returns short write error", func(t *testing.T) {
+		t.Parallel()
+
+		textLen := len(outputText) - 1
+		buf := &writerMock{num: textLen, err: nil}
+
+		f := fcqs.ExportNewFilter(buf, false)
+		_, err := f.Write([]byte("first line"))
+		require.NoError(t, err)
+
+		n, err := f.Write([]byte(outputText))
+		require.Error(t, err)
+
+		assert.Equal(t, textLen, n)
+		assert.EqualError(t, err, "short write")
+	})
 }
