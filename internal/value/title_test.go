@@ -21,7 +21,6 @@ func TestNewTitle(t *testing.T) {
 			{name: "trimmed title", title: "title string"},
 			{name: "un-trimmed title", title: " title string  "},
 		}
-
 		for _, tc := range tests {
 			t.Run(tc.name, func(t *testing.T) {
 				t.Parallel()
@@ -44,7 +43,6 @@ func TestNewTitle(t *testing.T) {
 			{name: "empty title", title: ""},
 			{name: "white spaces title", title: "  "},
 		}
-
 		for _, tc := range tests {
 			t.Run(tc.name, func(t *testing.T) {
 				t.Parallel()
@@ -52,6 +50,7 @@ func TestNewTitle(t *testing.T) {
 				title, err := value.NewTitle(tc.title)
 
 				require.Error(t, err)
+				require.ErrorIs(t, err, value.ErrEmptyTitle)
 				assert.Nil(t, title)
 			})
 		}

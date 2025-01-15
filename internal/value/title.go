@@ -1,9 +1,11 @@
 package value
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 )
+
+var ErrEmptyTitle = errors.New("title is empty")
 
 // Title represents a title that does not allow empty titles.
 type Title struct {
@@ -24,7 +26,7 @@ func (t Title) Equals(other *Title) bool {
 func NewTitle(t string) (*Title, error) {
 	t = strings.Trim(t, " ")
 	if t == "" {
-		return nil, fmt.Errorf("title is empty")
+		return nil, ErrEmptyTitle
 	}
 
 	return &Title{value: t}, nil

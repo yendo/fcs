@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -100,8 +101,8 @@ func TestFilterWriterError(t *testing.T) {
 
 		n, err := f.Write([]byte(outputText))
 		require.Error(t, err)
+		require.ErrorIs(t, err, io.ErrShortWrite)
 
 		assert.Equal(t, textLen, n)
-		assert.EqualError(t, err, "short write")
 	})
 }
