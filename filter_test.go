@@ -76,9 +76,9 @@ func TestFilterWriterError(t *testing.T) {
 
 		writeErr := "write error"
 		textLen := len(outputText)
-		buf := &writerMock{num: textLen, err: errors.New(writeErr)}
+		w := &writerMock{num: textLen, err: errors.New(writeErr)}
 
-		f := fcqs.ExportNewFilter(buf, false)
+		f := fcqs.ExportNewFilter(w, false)
 		_, err := f.Write([]byte("first line"))
 		require.NoError(t, err)
 
@@ -93,9 +93,9 @@ func TestFilterWriterError(t *testing.T) {
 		t.Parallel()
 
 		textLen := len(outputText) - 1
-		buf := &writerMock{num: textLen, err: nil}
+		w := &writerMock{num: textLen, err: nil}
 
-		f := fcqs.ExportNewFilter(buf, false)
+		f := fcqs.ExportNewFilter(w, false)
 		_, err := f.Write([]byte("first line"))
 		require.NoError(t, err)
 
