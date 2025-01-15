@@ -46,7 +46,7 @@ func TestRunSuccess(t *testing.T) {
 		err := run(&buf)
 
 		require.NoError(t, err)
-		assert.Equal(t, test.ExpectedTitles(), buf.String())
+		assert.Equal(t, test.ExpectedTitles, buf.String())
 	})
 
 	t.Run("with an arg", func(t *testing.T) {

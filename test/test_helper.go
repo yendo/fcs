@@ -28,10 +28,7 @@ func fullPath(filename string) string {
 	return filepath.Join(path.Dir(thisFileName), filename)
 }
 
+// ExpectedTitles has titles of the test notes.
+//
 //go:embed testdata/expected_titles.txt
-var expectedTitles string
-
-// ExpectedTitles returns the titles of the test notes.
-func ExpectedTitles() string {
-	return expectedTitles
-}
+var ExpectedTitles string

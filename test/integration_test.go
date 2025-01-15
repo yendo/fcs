@@ -80,7 +80,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "without args",
 			options: []string{},
-			stdout:  ExpectedTitles(),
+			stdout:  ExpectedTitles,
 		},
 		{
 			title:   "with an empty arg",

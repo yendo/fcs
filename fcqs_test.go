@@ -43,7 +43,7 @@ func TestWriteTitles(t *testing.T) {
 		err := fcqs.WriteTitles(&buf, file)
 
 		require.NoError(t, err)
-		assert.Equal(t, test.ExpectedTitles(), buf.String())
+		assert.Equal(t, test.ExpectedTitles, buf.String())
 	})
 
 	t.Run("fail with scan error", func(t *testing.T) {
