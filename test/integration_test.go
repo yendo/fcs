@@ -68,6 +68,11 @@ func TestCmdSuccess(t *testing.T) {
 			stdout:  "",
 		},
 		{
+			title:   "with cmd flag and an arg not for code block",
+			options: []string{"-c", "Headings in fenced code blocks are ignored"},
+			stdout:  "",
+		},
+		{
 			title:   "with location flag and an arg",
 			options: []string{"-l", "title"},
 			stdout:  fmt.Sprintf("%q 1\n", NotesFile),
