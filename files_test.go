@@ -3,7 +3,6 @@ package fcqs_test
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,8 +24,8 @@ func TestNewNotesFiles(t *testing.T) {
 	})
 
 	t.Run("failed to access notes file", func(t *testing.T) {
-		expectedFileName := test.NotesFile + string(os.PathListSeparator) + "invalid_file"
-		t.Setenv("FCQS_NOTES_FILE", expectedFileName)
+		expectedFileNames := test.MultiFiles(test.NotesFile, "invalid_file")
+		t.Setenv("FCQS_NOTES_FILE", expectedFileNames)
 
 		notes, err := fcqs.OpenNotesFiles()
 
@@ -49,7 +48,7 @@ func TestNewNotesFiles(t *testing.T) {
 
 	t.Run("set files from environment variable", func(t *testing.T) {
 		expectedFileNames := []string{test.NotesFile, test.LocationFile, test.LocationExtraFile}
-		t.Setenv("FCQS_NOTES_FILE", strings.Join(expectedFileNames, string(os.PathListSeparator)))
+		t.Setenv("FCQS_NOTES_FILE", test.MultiFiles(expectedFileNames...))
 
 		notes, err := fcqs.OpenNotesFiles()
 		notes.Close()

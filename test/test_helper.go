@@ -2,9 +2,11 @@ package test
 
 import (
 	_ "embed"
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 const (
@@ -20,6 +22,11 @@ var (
 	LocationFile      = fullPath(locationFile)
 	LocationExtraFile = fullPath(locationExtraFile)
 )
+
+// MultiFiles returns file names concatenated with PathListSeparator for FCQS_NOTES_FILE.
+func MultiFiles(files ...string) string {
+	return strings.Join(files, string(os.PathListSeparator))
+}
 
 // fullPath returns a full path of test note file.
 func fullPath(filename string) string {
