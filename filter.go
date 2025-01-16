@@ -14,12 +14,12 @@ type filter struct {
 }
 
 // Write writes filtered lines.
-func (f *filter) Write(p []byte) (n int, err error) {
+func (f *filter) Write(p []byte) (int, error) {
 	if f.prevLine == nil {
 		// Remove first non blank lines.
 		if f.isRemoveHead && !f.isDoneTitle {
 			f.isDoneTitle = true
-			return
+			return 0, nil
 		}
 
 		// Remove first blank lines.
@@ -27,24 +27,24 @@ func (f *filter) Write(p []byte) (n int, err error) {
 			f.prevLine = make([]byte, len(p), len(p)+1) // cap for LF
 			copy(f.prevLine, p)
 		}
-		return
+		return 0, nil
 	}
 
 	// Remove consecutive blank lines
 	if len(f.prevLine) == 0 && len(p) == 0 {
-		return
+		return 0, nil
 	}
 
 	// Add line feed
 	f.prevLine = append(f.prevLine, '\n')
 
-	n, err = f.w.Write(f.prevLine)
+	n, err := f.w.Write(f.prevLine)
 	if err != nil {
-		return
+		return n, err
 	}
 	if n != len(f.prevLine) {
 		err = io.ErrShortWrite
-		return
+		return n, err
 	}
 
 	f.prevLine = make([]byte, len(p), len(p)+1) // cap for LF

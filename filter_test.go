@@ -62,7 +62,7 @@ type writerMock struct {
 	err error
 }
 
-func (w writerMock) Write(_ []byte) (n int, err error) {
+func (w writerMock) Write(_ []byte) (int, error) {
 	return w.num, w.err
 }
 
@@ -79,12 +79,13 @@ func TestFilterWriterError(t *testing.T) {
 		w := &writerMock{num: textLen, err: errors.New(writeErr)}
 
 		f := fcqs.ExportNewFilter(w, false)
-		_, err := f.Write([]byte("first line"))
+
+		n, err := f.Write([]byte("first line"))
 		require.NoError(t, err)
+		assert.Zero(t, n)
 
-		n, err := f.Write([]byte(outputText))
+		n, err = f.Write([]byte(outputText))
 		require.Error(t, err)
-
 		assert.Equal(t, textLen, n)
 		assert.EqualError(t, err, writeErr)
 	})
@@ -96,13 +97,14 @@ func TestFilterWriterError(t *testing.T) {
 		w := &writerMock{num: textLen, err: nil}
 
 		f := fcqs.ExportNewFilter(w, false)
-		_, err := f.Write([]byte("first line"))
-		require.NoError(t, err)
 
-		n, err := f.Write([]byte(outputText))
+		n, err := f.Write([]byte("first line"))
+		require.NoError(t, err)
+		assert.Zero(t, n)
+
+		n, err = f.Write([]byte(outputText))
 		require.Error(t, err)
 		require.ErrorIs(t, err, io.ErrShortWrite)
-
 		assert.Equal(t, textLen, n)
 	})
 }
