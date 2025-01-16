@@ -38,6 +38,10 @@ integration-test-v: test/$(BINARY)
 	@go tool covdata percent -i=$(GOCOVERDIR)
 	@go tool covdata textfmt -i=$(GOCOVERDIR) -o cover-it.out
 
+.PHONY: benchmark
+benchmark:
+	go test -benchmem -bench=.
+
 .PHONY: super-linter
 super-linter: clean
 	docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true \
