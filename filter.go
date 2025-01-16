@@ -7,8 +7,8 @@ import (
 
 // filter represents filter that eliminates unnecessary lines.
 type filter struct {
-	WriteBuf     io.Writer
-	IsRemoveHead bool
+	w            io.Writer
+	isRemoveHead bool
 	isDoneTitle  bool
 	prevLine     []byte
 }
@@ -17,7 +17,7 @@ type filter struct {
 func (f *filter) Write(p []byte) (n int, err error) {
 	if f.prevLine == nil {
 		// Remove first non blank lines.
-		if f.IsRemoveHead && !f.isDoneTitle {
+		if f.isRemoveHead && !f.isDoneTitle {
 			f.isDoneTitle = true
 			return
 		}
@@ -38,7 +38,7 @@ func (f *filter) Write(p []byte) (n int, err error) {
 	// Add line feed
 	f.prevLine = append(f.prevLine, '\n')
 
-	n, err = f.WriteBuf.Write(f.prevLine)
+	n, err = f.w.Write(f.prevLine)
 	if err != nil {
 		return
 	}
@@ -54,11 +54,12 @@ func (f *filter) Write(p []byte) (n int, err error) {
 }
 
 // Close closes the filter.
-func (f *filter) Close() {
+func (f *filter) Close() error {
 	fmt.Fprint(f, "")
+	return nil
 }
 
 // newFilter returns a filter.
-func newFilter(w io.Writer, isRemoveHead bool) *filter {
-	return &filter{WriteBuf: w, IsRemoveHead: isRemoveHead}
+func newFilter(w io.Writer, isRemoveHead bool) io.WriteCloser {
+	return &filter{w: w, isRemoveHead: isRemoveHead}
 }

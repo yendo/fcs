@@ -2,9 +2,11 @@ package test
 
 import (
 	_ "embed"
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 const (
@@ -21,6 +23,11 @@ var (
 	LocationExtraFile = fullPath(locationExtraFile)
 )
 
+// MultiFiles returns file names concatenated with PathListSeparator for FCQS_NOTES_FILE.
+func MultiFiles(files ...string) string {
+	return strings.Join(files, string(os.PathListSeparator))
+}
+
 // fullPath returns a full path of test note file.
 func fullPath(filename string) string {
 	_, thisFileName, _, _ := runtime.Caller(0)
@@ -28,10 +35,7 @@ func fullPath(filename string) string {
 	return filepath.Join(path.Dir(thisFileName), filename)
 }
 
+// ExpectedTitles has titles of the test notes.
+//
 //go:embed testdata/expected_titles.txt
-var expectedTitles string
-
-// ExpectedTitles returns the titles of the test notes.
-func ExpectedTitles() string {
-	return expectedTitles
-}
+var ExpectedTitles string

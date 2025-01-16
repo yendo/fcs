@@ -68,6 +68,11 @@ func TestCmdSuccess(t *testing.T) {
 			stdout:  "",
 		},
 		{
+			title:   "with cmd flag and an arg not for code block",
+			options: []string{"-c", "Headings in fenced code blocks are ignored"},
+			stdout:  "",
+		},
+		{
 			title:   "with location flag and an arg",
 			options: []string{"-l", "title"},
 			stdout:  fmt.Sprintf("%q 1\n", NotesFile),
@@ -80,7 +85,7 @@ func TestCmdSuccess(t *testing.T) {
 		{
 			title:   "without args",
 			options: []string{},
-			stdout:  ExpectedTitles(),
+			stdout:  ExpectedTitles,
 		},
 		{
 			title:   "with an empty arg",
@@ -180,7 +185,7 @@ func TestCmdNotesLocation(t *testing.T) {
 }
 
 func TestCmdMultiFiles(t *testing.T) {
-	t.Setenv("FCQS_NOTES_FILE", LocationFile+string(os.PathListSeparator)+LocationExtraFile)
+	t.Setenv("FCQS_NOTES_FILE", MultiFiles(LocationFile, LocationExtraFile))
 
 	t.Run("show titles", func(t *testing.T) {
 		cmd := newTestCmd()
@@ -210,7 +215,7 @@ func TestCmdMultiFiles(t *testing.T) {
 	})
 
 	t.Run("file error", func(t *testing.T) {
-		t.Setenv("FCQS_NOTES_FILE", LocationFile+string(os.PathListSeparator)+"invalid_file")
+		t.Setenv("FCQS_NOTES_FILE", MultiFiles(LocationFile, "invalid_file"))
 
 		cmd := newTestCmd()
 		err := cmd.run()

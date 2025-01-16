@@ -41,20 +41,16 @@ func WriteTitles(w io.Writer, r io.Reader) error {
 
 		switch state {
 		case normal:
-			if titleLine, ok := value.NewTitleLine(line); ok {
-				if titleLine.HasValidTitle() {
-					title = titleLine.Title()
-					continue
-				}
+			if value.IsFenceLine(line) {
+				state = fenced
+			} else if tl, ok := value.NewTitleLine(line); ok && tl.HasValidTitle() {
+				title = tl.Title()
+				continue
 			}
 
 			if !slices.Contains(allTitles, title) {
 				fmt.Fprintln(w, title)
 				allTitles = append(allTitles, title)
-			}
-
-			if value.IsFenceLine(line) {
-				state = fenced
 			}
 
 		case fenced:
@@ -85,13 +81,9 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 		case normal:
 			if value.IsFenceLine(line) {
 				state = fenced
-			}
-
-			if titleLine, ok := value.NewTitleLine(line); ok {
-				if titleLine.EqualTitle(title) {
-					state = scoped
-					fmt.Fprint(f, line)
-				}
+			} else if tl, ok := value.NewTitleLine(line); ok && tl.EqualTitle(title) {
+				state = scoped
+				fmt.Fprint(f, line)
 			}
 
 		case fenced:
@@ -100,15 +92,11 @@ func WriteContents(w io.Writer, r io.Reader, title *value.Title, isNoTitle bool)
 			}
 
 		case scoped:
-			if titleLine, ok := value.NewTitleLine(line); ok {
-				if !titleLine.EqualTitle(title) {
-					state = normal
-					break
-				}
-			}
-
 			if value.IsFenceLine(line) {
 				state = scopedFenced
+			} else if tl, ok := value.NewTitleLine(line); ok && !tl.EqualTitle(title) {
+				state = normal
+				break
 			}
 
 			fmt.Fprint(f, line)
@@ -187,11 +175,9 @@ func WriteNoteLocation(w io.Writer, files []*os.File, title *value.Title) error 
 			c++
 			line := scanner.Text()
 
-			if titleLine, ok := value.NewTitleLine(line); ok {
-				if titleLine.EqualTitle(title) {
-					fmt.Fprintf(w, "%q %d\n", file.Name(), c)
-					break
-				}
+			if tl, ok := value.NewTitleLine(line); ok && tl.EqualTitle(title) {
+				fmt.Fprintf(w, "%q %d\n", file.Name(), c)
+				break
 			}
 		}
 		if err := scanner.Err(); err != nil {

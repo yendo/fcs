@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -75,9 +76,9 @@ func TestFilterWriterError(t *testing.T) {
 
 		writeErr := "write error"
 		textLen := len(outputText)
-		buf := &writerMock{num: textLen, err: errors.New(writeErr)}
+		w := &writerMock{num: textLen, err: errors.New(writeErr)}
 
-		f := fcqs.ExportNewFilter(buf, false)
+		f := fcqs.ExportNewFilter(w, false)
 		_, err := f.Write([]byte("first line"))
 		require.NoError(t, err)
 
@@ -92,16 +93,16 @@ func TestFilterWriterError(t *testing.T) {
 		t.Parallel()
 
 		textLen := len(outputText) - 1
-		buf := &writerMock{num: textLen, err: nil}
+		w := &writerMock{num: textLen, err: nil}
 
-		f := fcqs.ExportNewFilter(buf, false)
+		f := fcqs.ExportNewFilter(w, false)
 		_, err := f.Write([]byte("first line"))
 		require.NoError(t, err)
 
 		n, err := f.Write([]byte(outputText))
 		require.Error(t, err)
+		require.ErrorIs(t, err, io.ErrShortWrite)
 
 		assert.Equal(t, textLen, n)
-		assert.EqualError(t, err, "short write")
 	})
 }
