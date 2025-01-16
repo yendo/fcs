@@ -38,18 +38,16 @@ func OpenNotesFiles() (*NotesFiles, error) {
 		files = append(files, file)
 	}
 
-	file := io.MultiReader(readers...)
+	reader := io.MultiReader(readers...)
 
-	return &NotesFiles{Reader: file, Files: files}, nil
+	return &NotesFiles{Reader: reader, Files: files}, nil
 }
 
 // notesFileNames returns filenames of notes.
 func notesFileNames() ([]string, error) {
-	var fileNames []string
-
 	f := os.Getenv("FCQS_NOTES_FILE")
 	if f != "" {
-		fileNames = strings.Split(f, string(os.PathListSeparator))
+		fileNames := strings.Split(f, string(os.PathListSeparator))
 		return fileNames, nil
 	}
 
@@ -58,6 +56,6 @@ func notesFileNames() ([]string, error) {
 		return nil, fmt.Errorf("user home directory: %w", err)
 	}
 
-	fileNames = append(fileNames, filepath.Join(home, DefaultNotesFile))
-	return fileNames, nil
+	filenames := []string{filepath.Join(home, DefaultNotesFile)}
+	return filenames, nil
 }
