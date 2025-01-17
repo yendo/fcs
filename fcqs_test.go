@@ -211,7 +211,7 @@ func TestWriteFirstURL(t *testing.T) {
 }
 
 func TestWriteFirstCmdLine(t *testing.T) {
-	t.Parallel()
+	// Cannot run tests in parallel due to fcqs.SetNewScannerMock
 
 	tests := []struct {
 		title  string
@@ -252,7 +252,7 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		})
 	}
 
-	t.Run("scan failed", func(t *testing.T) {
+	t.Run("scan error to seek contents", func(t *testing.T) {
 		t.Parallel()
 
 		r := iotest.ErrReader(ErrScanForTest)
@@ -265,10 +265,24 @@ func TestWriteFirstCmdLine(t *testing.T) {
 		require.EqualError(t, err, fmt.Sprintf("seek contents: %s", ErrScanForTest))
 		assert.Empty(t, buf.String())
 	})
+
+	t.Run("scan error to seek command line block", func(t *testing.T) {
+		fcqs.SetNewScannerMock(t, ErrScanForTest)
+
+		file := openTestNotesFile(t, test.ShellBlockFile)
+		title, err := value.NewTitle("dummy")
+		require.NoError(t, err)
+
+		var buf bytes.Buffer
+		err = fcqs.WriteFirstCmdLineBlock(&buf, file, title)
+
+		require.EqualError(t, err, fmt.Sprintf("seek command line block: %s", ErrScanForTest))
+		assert.Empty(t, buf.String())
+	})
 }
 
 func TestWriteNoteLocation(t *testing.T) {
-	t.Parallel()
+	// Cannot run tests in parallel due to fcqs.SetNewScannerMock
 
 	t.Run("single file", func(t *testing.T) {
 		t.Parallel()
@@ -303,6 +317,24 @@ func TestWriteNoteLocation(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
+	})
+
+	t.Run("scan error", func(t *testing.T) {
+		fcqs.SetNewScannerMock(t, ErrScanForTest)
+
+		var testFiles []*os.File
+		testFile := openTestNotesFile(t, test.LocationFile)
+		testFiles = append(testFiles, testFile)
+
+		title, err := value.NewTitle("dummy")
+		require.NoError(t, err)
+
+		var buf bytes.Buffer
+		err = fcqs.WriteNoteLocation(&buf, testFiles, title)
+
+		require.Error(t, err)
+		require.EqualError(t, err, fmt.Sprintf("seek note location: %s", ErrScanForTest))
+		assert.Empty(t, buf.String())
 	})
 }
 
