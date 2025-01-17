@@ -307,3 +307,30 @@ func TestWriteNoteLocation(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("%q 9\n", testFile2.Name()), buf.String())
 	})
 }
+
+func BenchmarkWriteTitles(b *testing.B) {
+	file, err := os.Open(test.NotesFile)
+	require.NoError(b, err)
+	defer file.Close()
+
+	var buf bytes.Buffer
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		fcqs.WriteTitles(&buf, file) //nolint:errcheck
+	}
+}
+
+func BenchmarkWriteContents(b *testing.B) {
+	title, err := value.NewTitle("command-line")
+	require.NoError(b, err)
+
+	file, err := os.Open(test.NotesFile)
+	require.NoError(b, err)
+	defer file.Close()
+
+	var buf bytes.Buffer
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		fcqs.WriteContents(&buf, file, title, false) //nolint:errcheck
+	}
+}
