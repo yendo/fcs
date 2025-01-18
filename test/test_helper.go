@@ -3,7 +3,6 @@ package test
 import (
 	_ "embed"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -30,9 +29,12 @@ func MultiFiles(files ...string) string {
 
 // fullPath returns a full path of test note file.
 func fullPath(filename string) string {
-	_, thisFileName, _, _ := runtime.Caller(0)
+	_, thisFileName, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("fail to get a test file path")
+	}
 
-	return filepath.Join(path.Dir(thisFileName), filename)
+	return filepath.Join(filepath.Dir(thisFileName), filename)
 }
 
 // ExpectedTitles has titles of the test notes.
