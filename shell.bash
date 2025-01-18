@@ -31,11 +31,15 @@ fcqs() {
   title=$(fcqs-cli |
     fzf --preview "fcqs-cli {}" \
       --bind "${FCQS_COPY_KEY}:execute-silent(fcqs-cli ${FCQS_COPY_COMMAND_FLAG} {} | ${FCQS_COPY_COMMAND}),${FCQS_OPEN_KEY}:execute-silent(fcqs-cli -u {} | xargs ${FCQS_OPEN_COMMAND}),${FCQS_EDIT_KEY}:execute-silent(fcqs-cli -l {} | ${FCQS_EDIT_COMMAND})+abort")
-  fcqs-cli "$title"
-  local command
-  command=$(fcqs-cli -c "$title")
-  READLINE_LINE="${READLINE_LINE:0:$READLINE_POINT}${command}${READLINE_LINE:$READLINE_POINT}"
-  READLINE_POINT=$((READLINE_POINT + ${#command}))
+
+  if [ -n "$title" ]; then
+    fcqs-cli "$title"
+
+    local command
+    command=$(fcqs-cli -c "$title")
+    READLINE_LINE="${READLINE_LINE:0:$READLINE_POINT}${command}${READLINE_LINE:$READLINE_POINT}"
+    READLINE_POINT=$((READLINE_POINT + ${#command}))
+  fi
 }
 
 eval "bind -x '\"${FCQS_BASH_BIND_KEY}\":fcqs'"
