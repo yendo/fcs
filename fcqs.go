@@ -131,6 +131,9 @@ func WriteFirstURL(w io.Writer, r io.Reader, title *value.Title) error {
 	return nil
 }
 
+// newScanner is to replace bufio.NewScanner for test.
+var newScanner = bufio.NewScanner
+
 // WriteFirstCmdLineBlock writes the first command-line block in the contents of the note.
 func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error {
 	state := normal
@@ -139,7 +142,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 	if err := WriteContents(&buf, r, title, false); err != nil {
 		return err
 	}
-	scanner := bufio.NewScanner(&buf)
+	scanner := newScanner(&buf)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -169,7 +172,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 func WriteNoteLocation(w io.Writer, files []*os.File, title *value.Title) error {
 	for _, file := range files {
 		c := 0
-		scanner := bufio.NewScanner(file)
+		scanner := newScanner(file)
 
 		for scanner.Scan() {
 			c++
