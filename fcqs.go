@@ -144,6 +144,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 	}
 	scanner := newScanner(&buf)
 
+loop:
 	for scanner.Scan() {
 		line := scanner.Text()
 		fenceLine, isFenceLine := value.NewFenceLine(line)
@@ -156,7 +157,7 @@ func WriteFirstCmdLineBlock(w io.Writer, r io.Reader, title *value.Title) error 
 
 		case fenced:
 			if isFenceLine {
-				break
+				break loop
 			}
 			fmt.Fprintln(w, strings.TrimLeft(line, shellPrompt+" "))
 		}
