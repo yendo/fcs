@@ -90,3 +90,12 @@ ls -l | nl
 $ date
 ```
 
+# more command-line blocks
+
+```sh
+ls -l | nl
+```
+
+```console
+$ date
+```

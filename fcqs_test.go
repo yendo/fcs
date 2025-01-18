@@ -251,6 +251,19 @@ func TestWriteFirstCmdLine(t *testing.T) {
 			assert.Equal(t, expected[tc.output], buf.String())
 		})
 	}
+	t.Run("output only first command line block", func(t *testing.T) {
+		t.Parallel()
+
+		file := openTestNotesFile(t, test.NotesFile)
+		title, err := value.NewTitle("more command-line blocks")
+		require.NoError(t, err)
+
+		var buf bytes.Buffer
+		err = fcqs.WriteFirstCmdLineBlock(&buf, file, title)
+
+		require.NoError(t, err)
+		assert.Equal(t, "ls -l | nl\n", buf.String())
+	})
 
 	t.Run("scan error to seek contents", func(t *testing.T) {
 		t.Parallel()
