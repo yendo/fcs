@@ -67,7 +67,14 @@ export FCQS_NOTES_FILE="~/fcnotes.md"
 ### File
 
 The default notes file is `~/fcnotes.md`.
+
 The file can be changed by the environment variable `FCQS_NOTES_FILE`.
+The variable can specify multiple files using path separators.
+The path separator is `;` on Windows and `:` on other operating systems.
+
+``` bash
+export FCQS_NOTES_FILE=~/note.md:/usr/local/doc/note.md
+```
 
 ### Format
 
