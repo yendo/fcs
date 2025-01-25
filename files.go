@@ -8,11 +8,13 @@ import (
 	"strings"
 )
 
+// NotesFiles represents notes files.
 type NotesFiles struct {
 	Reader io.Reader
 	Files  []*os.File
 }
 
+// Close closes all notes files.
 func (n NotesFiles) Close() {
 	for _, f := range n.Files {
 		f.Close()
