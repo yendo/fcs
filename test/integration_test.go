@@ -36,6 +36,7 @@ func newTestCmd(args ...string) *testCmd {
 
 func TestCmdSuccess(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", NotesFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	tests := []struct {
 		title   string
@@ -120,6 +121,7 @@ func TestCmdSuccess(t *testing.T) {
 
 func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", NotesFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	cmd := newTestCmd("-t", "There can be no blank line")
 	err := cmd.run()
@@ -131,6 +133,7 @@ func TestCmdWriteContentsWithoutTitle(t *testing.T) {
 
 func TestCmdFail(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", NotesFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	tests := []struct {
 		title   string
@@ -175,6 +178,7 @@ func TestCmdFail(t *testing.T) {
 
 func TestCmdNotesLocation(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", LocationFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	cmd := newTestCmd("-l", "5th Line")
 	err := cmd.run()
@@ -186,6 +190,7 @@ func TestCmdNotesLocation(t *testing.T) {
 
 func TestCmdMultiFiles(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", MultiFiles(LocationFile, LocationExtraFile))
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	t.Run("show titles", func(t *testing.T) {
 		cmd := newTestCmd()
@@ -216,6 +221,7 @@ func TestCmdMultiFiles(t *testing.T) {
 
 	t.Run("file error", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", MultiFiles(LocationFile, "invalid_file"))
+		t.Setenv("FCQS_NOTES_FILES", "")
 
 		cmd := newTestCmd()
 		err := cmd.run()
@@ -228,6 +234,7 @@ func TestCmdMultiFiles(t *testing.T) {
 
 func TestUserHomeDirNotExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "")
+	t.Setenv("FCQS_NOTES_FILES", "")
 	t.Setenv("HOME", "")
 
 	cmd := newTestCmd()
@@ -240,6 +247,7 @@ func TestUserHomeDirNotExists(t *testing.T) {
 
 func TestNotesNotExists(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", "not_exists")
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	cmd := newTestCmd()
 	err := cmd.run()
@@ -254,6 +262,7 @@ func TestDefaultNoteExists(t *testing.T) {
 	tempHome := t.TempDir()
 	t.Setenv("HOME", tempHome)
 	t.Setenv("FCQS_NOTES_FILE", "")
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	file := filepath.Join(tempHome, defaultNotesFile)
 	err := os.WriteFile(file, []byte("# title\ncontents\n"), 0o600)

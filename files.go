@@ -47,7 +47,11 @@ func OpenNotesFiles() (*NotesFiles, error) {
 
 // notesFileNames returns filenames of notes.
 func notesFileNames() ([]string, error) {
-	f := os.Getenv("FCQS_NOTES_FILE")
+	f := os.Getenv("FCQS_NOTES_FILES")
+	if f == "" {
+		f = os.Getenv("FCQS_NOTES_FILE")
+	}
+
 	if f != "" {
 		fileNames := strings.Split(f, string(os.PathListSeparator))
 		return fileNames, nil
