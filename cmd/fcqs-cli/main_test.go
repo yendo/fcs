@@ -38,6 +38,7 @@ func setOSArgs(t *testing.T, args []string) {
 
 func TestRunSuccess(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.NotesFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	t.Run("without args", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli"})
@@ -85,6 +86,7 @@ func TestRunSuccess(t *testing.T) {
 func TestRunFail(t *testing.T) {
 	t.Run("failed to access UserHomeDir", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
+		t.Setenv("FCQS_NOTES_FILES", "")
 		t.Setenv("HOME", "")
 
 		var buf bytes.Buffer
@@ -97,6 +99,7 @@ func TestRunFail(t *testing.T) {
 
 	t.Run("failed to access notes file", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", "")
+		t.Setenv("FCQS_NOTES_FILES", "")
 		t.Setenv("HOME", "no_exits")
 
 		var buf bytes.Buffer
@@ -109,6 +112,7 @@ func TestRunFail(t *testing.T) {
 
 	t.Run("with two args", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", test.NotesFile)
+		t.Setenv("FCQS_NOTES_FILES", "")
 		setOSArgs(t, []string{"fcqs-cli", "title", "other"})
 
 		var buf bytes.Buffer
@@ -122,6 +126,7 @@ func TestRunFail(t *testing.T) {
 
 func TestRunMultiFiles(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.MultiFiles(test.LocationFile, test.LocationExtraFile))
+	t.Setenv("FCQS_NOTES_FILES", "")
 
 	t.Run("show titles", func(t *testing.T) {
 		setOSArgs(t, []string{"fcqs-cli"})
@@ -156,6 +161,7 @@ func TestRunMultiFiles(t *testing.T) {
 
 	t.Run("file error", func(t *testing.T) {
 		t.Setenv("FCQS_NOTES_FILE", test.MultiFiles(test.LocationFile, "invalid_file"))
+		t.Setenv("FCQS_NOTES_FILES", "")
 		setOSArgs(t, []string{"fcqs-cli"})
 
 		var buf bytes.Buffer
@@ -168,6 +174,7 @@ func TestRunMultiFiles(t *testing.T) {
 
 func TestRunWithURLFlag(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.NotesFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 	setCommandLineFlag(t, "url")
 
 	t.Run("with no args", func(t *testing.T) {
@@ -194,6 +201,7 @@ func TestRunWithURLFlag(t *testing.T) {
 
 func TestRunWithCmdFlag(t *testing.T) {
 	t.Setenv("FCQS_NOTES_FILE", test.NotesFile)
+	t.Setenv("FCQS_NOTES_FILES", "")
 	setCommandLineFlag(t, "command")
 
 	t.Run("with no args", func(t *testing.T) {
@@ -231,6 +239,7 @@ func TestRunWithCmdFlag(t *testing.T) {
 func TestRunWithLocationFlag(t *testing.T) {
 	testFileName := test.LocationFile
 	t.Setenv("FCQS_NOTES_FILE", testFileName)
+	t.Setenv("FCQS_NOTES_FILES", "")
 	setCommandLineFlag(t, "location")
 
 	t.Run("with no args", func(t *testing.T) {
